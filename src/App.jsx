@@ -66,7 +66,7 @@ und muss in diesem Ordner liegen:
 
 import { useState } from "react";
 
-export default function DemonLordsBestellung() {
+export default function App() {
   const sizes = ["S", "M", "L", "XL", "XXL", "3XL", "4XL"];
   const prices = { tshirt: 20, polo: 30, hoodie: 40 };
 
@@ -74,8 +74,6 @@ export default function DemonLordsBestellung() {
     { name: "Max Mustermann", nick: "Mäx", tshirtSize: "L", tshirtColor: "Schwarz", tshirtQty: 2, poloSize: "L", poloQty: 1, hoodieSize: "XL", hoodieQty: 1 },
     { name: "Jan Schmidt", nick: "Janni", tshirtSize: "XL", tshirtColor: "Olive", tshirtQty: 1, poloSize: "-", poloQty: 0, hoodieSize: "L", hoodieQty: 1 },
     { name: "Tom Becker", nick: "Becker", tshirtSize: "M", tshirtColor: "Schwarz", tshirtQty: 2, poloSize: "M", poloQty: 1, hoodieSize: "M", hoodieQty: 0 },
-    { name: "Alex Weber", nick: "Lex", tshirtSize: "XXL", tshirtColor: "Olive", tshirtQty: 1, poloSize: "XL", poloQty: 1, hoodieSize: "XXL", hoodieQty: 1 },
-    { name: "Chris Wagner", nick: "Waggy", tshirtSize: "L", tshirtColor: "Schwarz", tshirtQty: 1, poloSize: "-", poloQty: 0, hoodieSize: "L", hoodieQty: 1 },
   ]);
 
   const [form, setForm] = useState({
@@ -93,182 +91,228 @@ export default function DemonLordsBestellung() {
 
   const calc = (o) => o.tshirtQty * prices.tshirt + o.poloQty * prices.polo + o.hoodieQty * prices.hoodie;
   const euro = (n) => `${n.toFixed(2).replace(".", ",")} €`;
+
   const totalTshirts = orders.reduce((s, o) => s + o.tshirtQty, 0);
   const totalPolos = orders.reduce((s, o) => s + o.poloQty, 0);
   const totalHoodies = orders.reduce((s, o) => s + o.hoodieQty, 0);
   const total = orders.reduce((s, o) => s + calc(o), 0);
 
-  const submit = (e) => {
+  function submit(e) {
     e.preventDefault();
+    if (!form.name.trim()) return;
     setOrders([...orders, { ...form, poloSize: form.poloQty > 0 ? form.poloSize : "-" }]);
     setForm({ name: "", nick: "", tshirtSize: "S", tshirtColor: "Olive", tshirtQty: 0, poloSize: "S", poloQty: 0, hoodieSize: "S", hoodieQty: 0, note: "" });
-  };
+  }
 
-  const removeOrder = (index) => setOrders(orders.filter((_, i) => i !== index));
+  function update(key, value) {
+    setForm({ ...form, [key]: value });
+  }
 
-  const inputClass = "h-11 w-full rounded-[5px] border border-zinc-700 bg-[#070707]/90 px-3 text-zinc-100 outline-none transition focus:border-red-600 focus:shadow-[0_0_8px_rgba(220,0,0,.45)]";
-  const panelClass = "rounded-[8px] border border-zinc-700/80 bg-[linear-gradient(180deg,rgba(15,17,18,.94),rgba(2,2,2,.96))] shadow-[inset_0_0_28px_rgba(255,255,255,.035)]";
+  function exportCSV() {
+    const header = ["Name", "Spitzname", "T-Shirt Größe", "T-Shirt Farbe", "T-Shirt Anzahl", "Polo Größe", "Polo Anzahl", "Hoodie Größe", "Hoodie Anzahl", "Gesamtpreis"];
+    const rows = orders.map((o) => [o.name, o.nick, o.tshirtSize, o.tshirtColor, o.tshirtQty, o.poloSize, o.poloQty, o.hoodieSize, o.hoodieQty, euro(calc(o))]);
+    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replaceAll('"', '""')}"`).join(";")).join("
+");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "demon-lords-bestellung.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
-    <main className="min-h-screen bg-black p-2 text-white md:p-4">
-      <div className="mx-auto max-w-[1540px] overflow-hidden rounded-[6px] border border-red-800 bg-[#030303] shadow-[0_0_35px_rgba(120,0,0,.45)]">
-        <header className="relative min-h-[220px] overflow-hidden bg-[radial-gradient(circle_at_50%_20%,#202020_0%,#090909_42%,#000_78%)] md:min-h-[228px]">
-          <div className="absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_10%_20%,rgba(190,0,0,.45),transparent_18%),radial-gradient(circle_at_90%_20%,rgba(190,0,0,.45),transparent_18%)]" />
-          <div className="absolute inset-x-0 top-0 h-px bg-red-800" />
+    <>
+      <style>{css}</style>
+      <main className="page">
+        <div className="frame">
+          <header className="hero">
+            <div className="smoke" />
+            <img src="/logo.png" alt="Demon Lords Germany Logo" className="logo logo-left" />
+            <img src="/logo.png" alt="Demon Lords Germany Logo" className="logo logo-right" />
 
-          <img src="/logo.png" alt="Demon Lords Germany Logo" className="absolute left-5 top-4 w-[170px] object-contain md:left-10 md:w-[205px]" />
-          <img src="/logo.png" alt="Demon Lords Germany Logo" className="absolute right-5 top-4 hidden w-[205px] object-contain md:block" />
+            <div className="title-wrap">
+              <h1>DEMON LORDS</h1>
+              <h2>GERMANY</h2>
+              <p>VEREINS BESTELLUNG</p>
+            </div>
+          </header>
 
-          <div className="relative z-10 mx-auto max-w-[850px] px-4 pt-7 text-center md:px-56">
-            <h1 className="font-serif text-[48px] font-black uppercase leading-none tracking-[.12em] text-[#b91512] drop-shadow-[0_5px_0_#260000] md:text-[84px]">
-              Demon Lords
-            </h1>
-            <h2 className="mt-1 font-serif text-[34px] font-black uppercase leading-none tracking-[.32em] text-zinc-200 drop-shadow-[0_4px_0_#000] md:text-[50px]">
-              Germany
-            </h2>
-            <div className="mx-auto mt-3 h-px w-[300px] bg-red-800" />
-            <p className="mt-4 font-serif text-[20px] uppercase tracking-[.32em] text-zinc-300 md:text-[27px]">
-              Vereins Bestellung
-            </p>
+          <div className="layout">
+            <section className="panel form-panel">
+              <h3 className="section-title">▣ EINTRAGUNGSFORMULAR</h3>
+              <p className="subline">Bitte trage hier deine Bestellung ein.</p>
+
+              <form onSubmit={submit}>
+                <div className="two-cols">
+                  <label>Name <span>*</span><input required placeholder="Dein Name" value={form.name} onChange={(e) => update("name", e.target.value)} /></label>
+                  <label>Spitzname <span>*</span><input placeholder="Dein Spitzname" value={form.nick} onChange={(e) => update("nick", e.target.value)} /></label>
+                </div>
+
+                <Product title="👕 T-SHIRT – 20€">
+                  <div className="product-grid shirt-grid">
+                    <Select label="Größe" value={form.tshirtSize} onChange={(v) => update("tshirtSize", v)} options={sizes} />
+                    <Select label="Farbe" value={form.tshirtColor} onChange={(v) => update("tshirtColor", v)} options={["Olive", "Schwarz"]} />
+                    <NumberInput label="Anzahl" value={form.tshirtQty} onChange={(v) => update("tshirtQty", v)} />
+                  </div>
+                  <SizeRow sizes={sizes} />
+                </Product>
+
+                <Product title="👕 POLO-SHIRT – 30€" note="(Nur in Schwarz)">
+                  <div className="product-grid two-product-cols">
+                    <Select label="Größe" value={form.poloSize} onChange={(v) => update("poloSize", v)} options={sizes} />
+                    <NumberInput label="Anzahl" value={form.poloQty} onChange={(v) => update("poloQty", v)} />
+                  </div>
+                  <SizeRow sizes={sizes} />
+                </Product>
+
+                <Product title="🧥 HOODIE – 40€">
+                  <div className="product-grid two-product-cols">
+                    <Select label="Größe" value={form.hoodieSize} onChange={(v) => update("hoodieSize", v)} options={sizes} />
+                    <NumberInput label="Anzahl" value={form.hoodieQty} onChange={(v) => update("hoodieQty", v)} />
+                  </div>
+                  <SizeRow sizes={sizes} />
+                </Product>
+
+                <label>Hinweise (optional)<textarea placeholder="Hier kannst du optional etwas angeben..." value={form.note} onChange={(e) => update("note", e.target.value)} /></label>
+                <button className="submit" type="submit">➤ BESTELLUNG ABSENDEN</button>
+                <p className="privacy">🔒 Deine Daten werden nur für diese Bestellung verwendet.</p>
+              </form>
+            </section>
+
+            <section className="panel overview-panel">
+              <div className="overview-head">
+                <div>
+                  <h3 className="section-title">▣ BESTELLÜBERSICHT</h3>
+                  <p className="subline">Alle Einträge werden hier in Echtzeit angezeigt.</p>
+                </div>
+                <button className="export" onClick={exportCSV}>▦ EXCEL EXPORT</button>
+              </div>
+
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th rowSpan="2">Name</th><th rowSpan="2">Spitzname</th><th colSpan="4">T-Shirt</th><th colSpan="3">Polo-Shirt</th><th colSpan="3">Hoodie</th><th rowSpan="2">Gesamtpreis</th><th rowSpan="2"></th></tr>
+                    <tr><th>Größe</th><th>Farbe</th><th>Anzahl</th><th>Preis</th><th>Größe</th><th>Anzahl</th><th>Preis</th><th>Größe</th><th>Anzahl</th><th>Preis</th></tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((o, i) => (
+                      <tr key={i}>
+                        <td>{o.name}</td><td>{o.nick}</td>
+                        <td>{o.tshirtSize}</td><td>{o.tshirtColor}</td><td>{o.tshirtQty}</td><td>{euro(o.tshirtQty * prices.tshirt)}</td>
+                        <td>{o.poloQty > 0 ? o.poloSize : "-"}</td><td>{o.poloQty}</td><td>{euro(o.poloQty * prices.polo)}</td>
+                        <td>{o.hoodieQty > 0 ? o.hoodieSize : "-"}</td><td>{o.hoodieQty}</td><td>{euro(o.hoodieQty * prices.hoodie)}</td>
+                        <td className="price">{euro(calc(o))}</td>
+                        <td><button className="delete" onClick={() => setOrders(orders.filter((_, index) => index !== i))}>🗑</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="bottom-cards">
+                <div className="card summary">
+                  <h3>▟ GESAMTÜBERSICHT</h3>
+                  <Summary label="T-Shirts:" qty={totalTshirts} value={euro(totalTshirts * prices.tshirt)} icon="👕" />
+                  <Summary label="Polo-Shirts:" qty={totalPolos} value={euro(totalPolos * prices.polo)} icon="👕" />
+                  <Summary label="Hoodies:" qty={totalHoodies} value={euro(totalHoodies * prices.hoodie)} icon="🧥" />
+                  <div className="total"><strong>Gesamt:</strong><strong>{euro(total)}</strong></div>
+                </div>
+                <div className="card price-list">
+                  <h3>PREISLISTE</h3>
+                  <Price label="T-Shirt" value={euro(prices.tshirt)} icon="👕" />
+                  <Price label="Polo-Shirt" value={euro(prices.polo)} icon="👕" />
+                  <Price label="Hoodie" value={euro(prices.hoodie)} icon="🧥" />
+                </div>
+              </div>
+            </section>
           </div>
-        </header>
 
-        <div className="grid grid-cols-1 gap-4 px-3 pb-3 md:px-6 md:pb-6 xl:grid-cols-[460px_1fr]">
-          <section className={`${panelClass} p-4 md:p-5`}>
-            <div className="mb-5">
-              <h3 className="flex items-center gap-2 text-[23px] font-black uppercase text-red-600">▣ Eintragungsformular</h3>
-              <p className="mt-1 pl-10 text-[15px] text-zinc-200">Bitte trage hier deine Bestellung ein.</p>
-            </div>
-
-            <form onSubmit={submit} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                <label className="text-[14px] font-semibold">Name <span className="text-red-600">*</span>
-                  <input required className={`${inputClass} mt-2`} placeholder="Dein Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                </label>
-                <label className="text-[14px] font-semibold">Spitzname <span className="text-red-600">*</span>
-                  <input className={`${inputClass} mt-2`} placeholder="Dein Spitzname" value={form.nick} onChange={(e) => setForm({ ...form, nick: e.target.value })} />
-                </label>
-              </div>
-
-              <ProductBlock title="T-Shirt – 20€" icon="👕">
-                <div className="grid grid-cols-[1fr_145px_60px] gap-3 max-sm:grid-cols-1">
-                  <Field label="Größe"><select className={inputClass} value={form.tshirtSize} onChange={(e) => setForm({ ...form, tshirtSize: e.target.value })}>{sizes.map(s => <option key={s}>{s}</option>)}</select></Field>
-                  <Field label="Farbe"><select className={inputClass} value={form.tshirtColor} onChange={(e) => setForm({ ...form, tshirtColor: e.target.value })}><option>Olive</option><option>Schwarz</option></select></Field>
-                  <Field label="Anzahl"><input type="number" min="0" className={inputClass} value={form.tshirtQty} onChange={(e) => setForm({ ...form, tshirtQty: Number(e.target.value) })} /></Field>
-                </div>
-                <SizeRow sizes={sizes} />
-              </ProductBlock>
-
-              <ProductBlock title="Polo-Shirt – 30€" note="(Nur in Schwarz)" icon="👕">
-                <div className="grid grid-cols-[1fr_70px] gap-7 max-sm:grid-cols-1">
-                  <Field label="Größe"><select className={inputClass} value={form.poloSize} onChange={(e) => setForm({ ...form, poloSize: e.target.value })}>{sizes.map(s => <option key={s}>{s}</option>)}</select></Field>
-                  <Field label="Anzahl"><input type="number" min="0" className={inputClass} value={form.poloQty} onChange={(e) => setForm({ ...form, poloQty: Number(e.target.value) })} /></Field>
-                </div>
-                <SizeRow sizes={sizes} />
-              </ProductBlock>
-
-              <ProductBlock title="Hoodie – 40€" icon="🧥">
-                <div className="grid grid-cols-[1fr_70px] gap-7 max-sm:grid-cols-1">
-                  <Field label="Größe"><select className={inputClass} value={form.hoodieSize} onChange={(e) => setForm({ ...form, hoodieSize: e.target.value })}>{sizes.map(s => <option key={s}>{s}</option>)}</select></Field>
-                  <Field label="Anzahl"><input type="number" min="0" className={inputClass} value={form.hoodieQty} onChange={(e) => setForm({ ...form, hoodieQty: Number(e.target.value) })} /></Field>
-                </div>
-                <SizeRow sizes={sizes} />
-              </ProductBlock>
-
-              <label className="block text-[14px] font-semibold">Hinweise (optional)
-                <textarea rows="3" className={`${inputClass} mt-2 h-[45px] resize-none py-3`} placeholder="Hier kannst du optional etwas angeben..." value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
-              </label>
-
-              <button className="h-11 w-full rounded-[5px] bg-[linear-gradient(180deg,#f02520,#be100d)] text-[18px] font-black uppercase tracking-wide shadow-[0_0_16px_rgba(255,0,0,.45)] hover:brightness-110">➤ Bestellung absenden</button>
-              <p className="text-center text-xs text-zinc-400">🔒 Deine Daten werden nur für diese Bestellung verwendet.</p>
-            </form>
-          </section>
-
-          <section className={`${panelClass} overflow-hidden`}>
-            <div className="flex flex-col gap-3 border-b border-zinc-800 px-4 py-4 md:flex-row md:items-start md:justify-between md:px-5">
-              <div>
-                <h3 className="flex items-center gap-2 text-[23px] font-black uppercase text-red-600">▣ Bestellübersicht</h3>
-                <p className="mt-1 pl-10 text-[15px] text-zinc-200">Alle Einträge werden hier in Echtzeit angezeigt.</p>
-              </div>
-              <button className="rounded-[5px] border border-red-800 px-5 py-3 text-sm uppercase text-zinc-200 hover:bg-red-950/30">▦ Excel Export</button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1010px] border-collapse text-[15px]">
-                <thead>
-                  <tr className="border-b border-zinc-800 text-left">
-                    <th className="px-4 py-3" rowSpan="2">Name</th>
-                    <th className="px-4 py-3" rowSpan="2">Spitzname</th>
-                    <th className="border-l border-zinc-800 px-3 py-2 text-center" colSpan="4">T-Shirt</th>
-                    <th className="border-l border-zinc-800 px-3 py-2 text-center" colSpan="3">Polo-Shirt</th>
-                    <th className="border-l border-zinc-800 px-3 py-2 text-center" colSpan="3">Hoodie</th>
-                    <th className="border-l border-zinc-800 px-4 py-3" rowSpan="2">Gesamtpreis</th>
-                    <th rowSpan="2"></th>
-                  </tr>
-                  <tr className="border-b border-zinc-800 text-zinc-300">
-                    <th className="px-3 py-2">Größe</th><th className="px-3 py-2">Farbe</th><th className="px-3 py-2">Anzahl</th><th className="px-3 py-2">Preis</th>
-                    <th className="border-l border-zinc-800 px-3 py-2">Größe</th><th className="px-3 py-2">Anzahl</th><th className="px-3 py-2">Preis</th>
-                    <th className="border-l border-zinc-800 px-3 py-2">Größe</th><th className="px-3 py-2">Anzahl</th><th className="px-3 py-2">Preis</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o, i) => (
-                    <tr key={i} className="border-b border-zinc-800/90 hover:bg-white/[.03]">
-                      <td className="px-4 py-3">{o.name}</td><td className="px-4 py-3">{o.nick}</td>
-                      <td className="border-l border-zinc-800 px-3 py-3">{o.tshirtSize}</td><td className="px-3 py-3">{o.tshirtColor}</td><td className="px-3 py-3">{o.tshirtQty}</td><td className="px-3 py-3">{euro(o.tshirtQty * prices.tshirt)}</td>
-                      <td className="border-l border-zinc-800 px-3 py-3">{o.poloQty > 0 ? o.poloSize : "-"}</td><td className="px-3 py-3">{o.poloQty}</td><td className="px-3 py-3">{euro(o.poloQty * prices.polo)}</td>
-                      <td className="border-l border-zinc-800 px-3 py-3">{o.hoodieQty > 0 ? o.hoodieSize : "-"}</td><td className="px-3 py-3">{o.hoodieQty}</td><td className="px-3 py-3">{euro(o.hoodieQty * prices.hoodie)}</td>
-                      <td className="border-l border-zinc-800 px-4 py-3 font-black text-red-600">{euro(calc(o))}</td>
-                      <td className="px-3 py-2"><button onClick={() => removeOrder(i)} className="rounded-[5px] border border-red-700 px-2 py-2 text-red-600">🗑</button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 p-4 md:p-5 lg:grid-cols-[1.15fr_.95fr]">
-              <div className="rounded-[8px] border border-zinc-700 bg-black/55 p-6 shadow-[inset_0_0_28px_rgba(255,255,255,.035)]">
-                <h3 className="mb-6 text-center text-[24px] font-black uppercase text-red-600">▟ Gesamtübersicht</h3>
-                <SummaryLine icon="👕" label="T-Shirts:" qty={totalTshirts} value={euro(totalTshirts * prices.tshirt)} />
-                <SummaryLine icon="👕" label="Polo-Shirts:" qty={totalPolos} value={euro(totalPolos * prices.polo)} />
-                <SummaryLine icon="🧥" label="Hoodies:" qty={totalHoodies} value={euro(totalHoodies * prices.hoodie)} />
-                <div className="mt-5 flex items-center justify-between border-t border-zinc-600 pt-5 text-[24px] font-black text-red-600 md:text-[30px]"><span>Gesamt:</span><span>{euro(total)}</span></div>
-              </div>
-
-              <div className="rounded-[8px] border border-zinc-700 bg-black/55 p-6 shadow-[inset_0_0_28px_rgba(255,255,255,.035)]">
-                <h3 className="mb-6 text-center text-[24px] font-black uppercase text-red-600">Preisliste</h3>
-                <PriceLine icon="👕" label="T-Shirt" value={euro(prices.tshirt)} />
-                <PriceLine icon="👕" label="Polo-Shirt" value={euro(prices.polo)} />
-                <PriceLine icon="🧥" label="Hoodie" value={euro(prices.hoodie)} last />
-              </div>
-            </div>
-          </section>
+          <footer>💀 DEMON LORDS GERMANY — BROTHERHOOD. LOYALTY. RESPECT. 💀</footer>
         </div>
-
-        <footer className="mx-3 mb-3 rounded-[8px] border border-zinc-800 bg-[#050505] py-3 text-center font-serif text-xs uppercase tracking-[.35em] text-zinc-300 md:mx-6 md:mb-4 md:text-base">
-          💀 Demon Lords Germany — Brotherhood. Loyalty. Respect. 💀
-        </footer>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
 
-function Field({ label, children }) {
-  return <label className="text-[14px] font-semibold">{label}<div className="mt-2">{children}</div></label>;
+function Product({ title, note, children }) {
+  return <div className="product"><h4>{title} {note && <small>{note}</small>}</h4>{children}</div>;
 }
-
+function Select({ label, value, onChange, options }) {
+  return <label>{label}<select value={value} onChange={(e) => onChange(e.target.value)}>{options.map((o) => <option key={o}>{o}</option>)}</select></label>;
+}
+function NumberInput({ label, value, onChange }) {
+  return <label>{label}<input type="number" min="0" value={value} onChange={(e) => onChange(Number(e.target.value))} /></label>;
+}
 function SizeRow({ sizes }) {
-  return <div className="mt-2 flex flex-wrap gap-[6px] text-[14px] text-zinc-200">{sizes.map((s) => <span key={s} className="min-w-8 rounded-[4px] border border-zinc-700 bg-black/40 px-2 py-[2px] text-center">{s}</span>)}</div>;
+  return <div className="size-row">{sizes.map((s) => <span key={s}>{s}</span>)}</div>;
+}
+function Summary({ icon, label, qty, value }) {
+  return <div className="summary-line"><span className="sicon">{icon}</span><b>{label}</b><span>{qty} Stk.</span><span>{value}</span></div>;
+}
+function Price({ icon, label, value }) {
+  return <div className="price-line"><span>{icon}</span><b>{label}</b><em>{value}</em></div>;
 }
 
-function ProductBlock({ title, note, icon, children }) {
-  return <div><h3 className="mb-3 flex items-center gap-2 text-[20px] font-black uppercase"><span className="text-red-600">{icon}</span>{title} {note && <span className="text-sm normal-case text-zinc-300">{note}</span>}</h3>{children}</div>;
-}
-
-function SummaryLine({ icon, label, qty, value }) {
-  return <div className="mb-3 grid grid-cols-[44px_1fr_90px_120px] items-center gap-3 text-[20px] max-sm:grid-cols-[34px_1fr_70px] max-sm:text-base"><span className="text-3xl text-red-600">{icon}</span><span className="font-bold">{label}</span><span>{qty} Stk.</span><span className="max-sm:col-start-2 max-sm:text-right">{value}</span></div>;
-}
-
-function PriceLine({ icon, label, value, last }) {
-  return <div className={`flex items-center justify-between py-4 text-[20px] ${last ? "" : "border-b border-zinc-700"}`}><span className="flex items-center gap-4 font-bold"><span className="text-4xl text-red-600">{icon}</span>{label}</span><span>{value}</span></div>;
-}
+const css = `
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; background: #000; }
+body { font-family: Arial, Helvetica, sans-serif; color: #fff; }
+.page { min-height: 100vh; background: #000; padding: 12px; }
+.frame { max-width: 1540px; margin: 0 auto; border: 1px solid #8b0000; border-radius: 7px; background: #030303; overflow: hidden; box-shadow: 0 0 35px rgba(150,0,0,.45); }
+.hero { position: relative; min-height: 220px; overflow: hidden; background: radial-gradient(circle at 50% 20%, #202020 0%, #090909 42%, #000 78%); border-bottom: 1px solid #220000; }
+.smoke { position: absolute; inset: 0; opacity: .55; background: radial-gradient(circle at 10% 20%, rgba(190,0,0,.45), transparent 18%), radial-gradient(circle at 90% 20%, rgba(190,0,0,.45), transparent 18%), radial-gradient(circle at 50% 15%, rgba(255,255,255,.15), transparent 30%); }
+.logo { position: absolute; top: 12px; width: 205px; object-fit: contain; z-index: 2; filter: drop-shadow(0 0 12px rgba(255,0,0,.45)); }
+.logo-left { left: 38px; }
+.logo-right { right: 38px; }
+.title-wrap { position: relative; z-index: 3; text-align: center; padding-top: 28px; margin: 0 auto; max-width: 900px; }
+h1 { margin: 0; font-family: Georgia, serif; font-size: 84px; line-height: .9; letter-spacing: .12em; color: #b91512; text-shadow: 0 5px 0 #260000; }
+h2 { margin: 4px 0 0; font-family: Georgia, serif; font-size: 50px; letter-spacing: .32em; color: #e5e5e5; text-shadow: 0 4px 0 #000; }
+.title-wrap p { display: inline-block; margin: 12px 0 0; padding-top: 12px; min-width: 340px; border-top: 1px solid #8b0000; font-family: Georgia, serif; font-size: 27px; letter-spacing: .32em; color: #d4d4d4; }
+.layout { display: grid; grid-template-columns: 460px 1fr; gap: 16px; padding: 0 22px 16px; margin-top: 0; }
+.panel { border: 1px solid rgba(160,160,160,.45); border-radius: 8px; background: linear-gradient(180deg, rgba(15,17,18,.95), rgba(2,2,2,.97)); box-shadow: inset 0 0 28px rgba(255,255,255,.035); }
+.form-panel { padding: 17px; }
+.overview-panel { overflow: hidden; }
+.section-title { margin: 0; color: #e51b16; font-size: 23px; font-weight: 900; letter-spacing: .02em; }
+.subline { margin: 8px 0 20px 40px; color: #e0e0e0; font-size: 15px; }
+form { display: flex; flex-direction: column; gap: 20px; }
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+label { display: block; font-size: 14px; font-weight: 700; color: #f2f2f2; }
+label span { color: #ff1c15; }
+input, select, textarea { width: 100%; margin-top: 7px; height: 42px; border-radius: 5px; border: 1px solid #414141; background: rgba(4,4,4,.95); color: #f3f3f3; padding: 0 12px; outline: none; }
+input:focus, select:focus, textarea:focus { border-color: #d40000; box-shadow: 0 0 8px rgba(220,0,0,.45); }
+textarea { height: 44px; padding-top: 11px; resize: none; }
+.product h4 { margin: 0 0 12px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
+.product h4 small { font-size: 14px; color: #dedede; font-weight: 700; text-transform: none; }
+.product-grid { display: grid; gap: 13px; align-items: end; }
+.shirt-grid { grid-template-columns: 1fr 145px 60px; }
+.two-product-cols { grid-template-columns: 1fr 70px; gap: 26px; }
+.size-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+.size-row span { min-width: 31px; text-align: center; color: #e7e7e7; border: 1px solid #333; border-radius: 4px; background: rgba(0,0,0,.5); padding: 2px 6px; font-size: 14px; }
+.submit { height: 44px; border: 0; border-radius: 5px; background: linear-gradient(180deg,#f02520,#be100d); color: #fff; font-size: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: .03em; cursor: pointer; box-shadow: 0 0 16px rgba(255,0,0,.45); }
+.privacy { margin: -8px 0 0; text-align: center; color: #aaa; font-size: 12px; }
+.overview-head { display: flex; justify-content: space-between; gap: 16px; padding: 16px 18px; border-bottom: 1px solid #272727; }
+.export { align-self: start; border: 1px solid #8b0000; background: #070707; color: #eee; border-radius: 5px; padding: 12px 20px; font-size: 14px; text-transform: uppercase; cursor: pointer; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; min-width: 1010px; border-collapse: collapse; font-size: 15px; }
+th, td { padding: 11px 13px; border-bottom: 1px solid #242424; text-align: left; white-space: nowrap; }
+th { color: #f5f5f5; font-weight: 900; }
+th[colspan] { text-align: center; }
+td:nth-child(3), th:nth-child(3), td:nth-child(7), th:nth-child(7), td:nth-child(10), th:nth-child(10), td:nth-child(13), th:nth-child(13) { border-left: 1px solid #242424; }
+tr:hover td { background: rgba(255,255,255,.03); }
+.price { color: #ff1610; font-weight: 900; }
+.delete { border: 1px solid #b00000; color: #ff1610; background: transparent; border-radius: 5px; padding: 7px 9px; cursor: pointer; }
+.bottom-cards { display: grid; grid-template-columns: 1.15fr .95fr; gap: 16px; padding: 18px; }
+.card { border: 1px solid #505050; border-radius: 8px; background: rgba(0,0,0,.55); padding: 24px 36px; box-shadow: inset 0 0 28px rgba(255,255,255,.035); }
+.card h3 { margin: 0 0 20px; text-align: center; color: #f01b15; font-size: 24px; font-weight: 900; text-transform: uppercase; }
+.summary-line { display: grid; grid-template-columns: 45px 1fr 90px 125px; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 20px; }
+.sicon, .price-line span { font-size: 36px; filter: hue-rotate(130deg) saturate(2); }
+.total { display: flex; justify-content: space-between; margin-top: 18px; padding-top: 18px; border-top: 1px solid #555; color: #f01b15; font-size: 30px; }
+.price-line { display: grid; grid-template-columns: 55px 1fr auto; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #333; font-size: 20px; }
+.price-line:last-child { border-bottom: 0; }
+.price-line em { font-style: normal; }
+footer { margin: 0 22px 16px; border: 1px solid #242424; border-radius: 8px; background: #050505; color: #d0d0d0; text-align: center; padding: 13px; font-family: Georgia, serif; font-size: 15px; letter-spacing: .35em; text-transform: uppercase; }
+@media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } .logo { width: 160px; } h1 { font-size: 60px; } h2 { font-size: 36px; } .title-wrap p { font-size: 20px; } }
+@media (max-width: 760px) { .page { padding: 6px; } .hero { min-height: 260px; } .logo { width: 115px; left: 8px; } .logo-right { display: none; } .title-wrap { padding: 125px 12px 20px; } h1 { font-size: 38px; letter-spacing: .08em; } h2 { font-size: 25px; letter-spacing: .18em; } .title-wrap p { min-width: 0; width: 100%; font-size: 15px; letter-spacing: .18em; } .layout { padding: 0 8px 12px; } .two-cols, .shirt-grid, .two-product-cols, .bottom-cards { grid-template-columns: 1fr; } .overview-head { flex-direction: column; } .card { padding: 20px; } .summary-line { grid-template-columns: 36px 1fr 80px; font-size: 16px; } .summary-line span:last-child { grid-column: 2 / 4; text-align: right; } .total { font-size: 24px; } footer { margin: 0 8px 10px; font-size: 11px; letter-spacing: .18em; } }
+`;
