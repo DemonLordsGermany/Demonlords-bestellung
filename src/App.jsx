@@ -66,6 +66,30 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    function syncSettings(event) {
+      if (event.key === "dl_order_deadline" && event.newValue) {
+        setDeadlineSaved(event.newValue);
+        setDeadlineInput(event.newValue);
+      }
+
+      if (event.key === "dl_member_password" && event.newValue) {
+        setMemberPasswordSaved(event.newValue);
+      }
+
+      if (event.key === "dl_admin_password" && event.newValue) {
+        setAdminPasswordSaved(event.newValue);
+      }
+
+      if (event.key === "dl_orders" && event.newValue) {
+        setOrders(JSON.parse(event.newValue));
+      }
+    }
+
+    window.addEventListener("storage", syncSettings);
+    return () => window.removeEventListener("storage", syncSettings);
+  }, []);
+
   const calc = (o) =>
     Number(o.tshirtQty) * prices.tshirt +
     Number(o.poloQty) * prices.polo +
