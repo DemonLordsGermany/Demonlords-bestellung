@@ -53,12 +53,12 @@ export default function App() {
     const header = [
       "Name",
       "Spitzname",
-      "T-Shirt Größe",
+      "T-Shirt Groesse",
       "T-Shirt Farbe",
       "T-Shirt Anzahl",
-      "Polo Größe",
+      "Polo Groesse",
       "Polo Anzahl",
-      "Hoodie Größe",
+      "Hoodie Groesse",
       "Hoodie Anzahl",
       "Gesamtpreis",
     ];
@@ -76,12 +76,15 @@ export default function App() {
       euro(calc(o)),
     ]);
 
-    const csv = [header, ...rows]
+    const allRows = [header, ...rows];
+    const csv = allRows
       .map((row) => row.map((cell) => String(cell).replace(/;/g, ",")).join(";"))
-      .join("
-");
+      .join(String.fromCharCode(10));
 
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([String.fromCharCode(65279) + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
