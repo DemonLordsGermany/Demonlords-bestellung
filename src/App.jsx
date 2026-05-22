@@ -372,20 +372,20 @@ export default function App() {
             <img src="/logo.png" alt="Demon Lords Germany Logo" className="logo logoRight" />
             <button className="memberLogout" onClick={logout}>Logout</button>
 
-            <div className={orderClosed ? "deadlineHeader closed" : "deadlineHeader"}>
-              {orderClosed ? (
-                <span>BESTELLUNG GESCHLOSSEN</span>
-              ) : (
-                <span>{days}T · {hours}H · {minutes}M · {seconds}S</span>
-              )}
-            </div>
-
             <div className="headline">
               <h1>DEMON LORDS</h1>
               <h2>GERMANY</h2>
               <p>VEREINS BESTELLUNG</p>
             </div>
           </header>
+
+          <div className={orderClosed ? "deadlineBar closed" : "deadlineBar"}>
+            {orderClosed ? (
+              <span>BESTELLUNG GESCHLOSSEN</span>
+            ) : (
+              <span>Bestellschluss: {days} Tage · {hours} Std. · {minutes} Min. · {seconds} Sek.</span>
+            )}
+          </div>
 
           <div className="content">
             <section className="panel formPanel">
@@ -685,7 +685,7 @@ body{font-family:'Oswald',Arial,sans-serif;color:#f2f2f2;background:#000;overflo
 .logo{position:absolute;top:clamp(6px,1vw,10px);width:clamp(92px,10vw,150px);object-fit:contain;z-index:2;filter:drop-shadow(0 0 8px rgba(255,0,0,.45)) contrast(1.06) saturate(1.04)}
 .logoLeft{left:clamp(8px,2vw,28px)}.logoRight{right:clamp(8px,2vw,28px)}
 .memberLogout{position:absolute;right:clamp(8px,1.4vw,18px);bottom:clamp(8px,1.2vw,14px);z-index:5;border:1px solid #555;background:#070707;color:#ddd;border-radius:5px;padding:clamp(6px,.8vw,8px) clamp(10px,1vw,14px);font-family:'Oswald',Arial,sans-serif;text-transform:uppercase;cursor:pointer;font-size:clamp(12px,.9vw,14px)}
-.deadlineHeader{position:absolute;top:clamp(14px,1.2vw,18px);right:clamp(70px,10vw,180px);left:auto;transform:none;z-index:6;border:1px solid #8b0000;background:linear-gradient(180deg,rgba(20,20,20,.95),rgba(0,0,0,.92));color:#fff;border-radius:8px;padding:clamp(7px,.9vw,10px) clamp(14px,1.4vw,22px);font-family:'Oswald',Arial,sans-serif;font-weight:700;letter-spacing:.08em;box-shadow:0 0 18px rgba(255,0,0,.35);font-size:clamp(12px,.95vw,15px);white-space:nowrap;backdrop-filter:blur(6px)}.deadlineHeader.closed{color:#ff1c15;border-color:#ff1c15}
+.deadlineBar{width:calc(100% - clamp(16px,2.4vw,36px));margin:clamp(8px,1vw,12px) auto;border:1px solid #8b0000;background:linear-gradient(180deg,rgba(20,20,20,.95),rgba(0,0,0,.92));color:#fff;border-radius:8px;padding:9px 16px;font-family:'Oswald',Arial,sans-serif;font-weight:700;letter-spacing:.06em;box-shadow:0 0 18px rgba(255,0,0,.25);font-size:clamp(12px,.95vw,15px);text-align:center;flex:0 0 auto}.deadlineBar.closed{color:#ff1c15;border-color:#ff1c15;background:rgba(120,0,0,.18)}
 
 .headline{position:relative;z-index:3;text-align:center;padding-top:clamp(14px,2dvh,23px);margin:0 auto;max-width:920px;padding-left:clamp(110px,14vw,185px);padding-right:clamp(110px,14vw,185px)}
 .headline h1{margin:0;font-family:'Rye',Georgia,serif;font-size:clamp(34px,4.8vw,64px);line-height:.95;letter-spacing:.04em;color:#b91410;text-shadow:0 2px 0 #3a0000,0 0 6px rgba(230,0,0,.18);font-weight:400;white-space:nowrap}
@@ -719,6 +719,6 @@ footer{margin:0 clamp(8px,1.2vw,18px) clamp(8px,1vw,14px);border:1px solid #2424
 .loginPage{display:flex;align-items:center;justify-content:center}.loginFrame{position:relative;width:min(95vw,560px);max-height:96dvh;overflow:auto;border:1px solid #8f0907;border-radius:10px;background:radial-gradient(circle at top,#232323,#050505 65%,#000);padding:clamp(20px,3vw,34px);box-shadow:0 0 42px rgba(160,0,0,.48);text-align:center}.loginLogo{position:relative;z-index:2;width:clamp(120px,28vw,170px);filter:drop-shadow(0 0 10px rgba(255,0,0,.55));margin-bottom:10px}.loginFrame h1,.loginFrame h2,.loginSubline,.loginBox,.loginHint{position:relative;z-index:2}.loginFrame h1{margin:0;font-family:'Rye',Georgia,serif;font-size:clamp(30px,7vw,42px);color:#b91410;letter-spacing:.05em}.loginFrame h2{margin:5px 0 0;font-family:'Rye',Georgia,serif;font-size:clamp(20px,5vw,27px);color:#ddd;letter-spacing:.18em}.loginSubline{margin:16px 0 20px;padding-top:12px;border-top:1px solid #8b0000;font-family:'Rye',Georgia,serif;letter-spacing:.16em;color:#ccc}.loginBox{display:flex;flex-direction:column;gap:14px;text-align:left}.loginBox button{height:44px;border:0;border-radius:5px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;font-family:'Oswald',Arial,sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;cursor:pointer}.loginError{color:#ff1c15;text-align:center;font-weight:700}.deadlineBox{position:relative;z-index:2;margin:0 0 18px;border:1px solid #8b0000;border-radius:8px;background:rgba(0,0,0,.58);padding:12px;text-align:center;box-shadow:0 0 16px rgba(255,0,0,.18)}.deadlineBox strong{display:block;color:#ff2119;font-size:clamp(16px,4vw,18px);letter-spacing:.08em}.deadlineBox span{display:block;margin-top:6px;font-size:clamp(18px,5vw,22px);font-weight:700}.deadlineBox small{display:block;margin-top:4px;color:#aaa}.deadlineBox.closed{border-color:#ff1c15;background:rgba(120,0,0,.18)}.loginHint{margin:18px 0 0;color:#aaa;font-size:13px}
 
 @media(max-width:1200px){.frame{min-height:auto}.hero{height:auto;min-height:175px}.content{grid-template-columns:1fr}.formPanel{height:auto;overflow:visible}.overviewPanel{height:auto}.tableWrap{max-height:none;flex:none}.logo{width:130px}.headline{padding-left:145px;padding-right:145px}.passwordGrid{grid-template-columns:1fr}}
-@media(max-width:760px){.page{padding:5px}.frame{min-height:calc(100dvh - 10px)}.hero{height:auto;min-height:245px}.logo{width:104px;left:8px;top:8px}.logoRight{display:none}.memberLogout{right:8px;bottom:8px;padding:7px 10px}.deadlineHeader{bottom:48px;font-size:12px;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis}.headline{padding:118px 10px 18px}.headline h1{font-size:34px;letter-spacing:.035em;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em;white-space:normal}.headline p{min-width:0;width:100%;font-size:13px;letter-spacing:.11em;white-space:normal}.content{padding:0 7px 10px}.twoCols,.shirtGrid,.twoProductCols,.bottomCards{grid-template-columns:1fr}.overviewHead{flex-direction:column}.adminBox{justify-content:flex-start}.adminForm{grid-template-columns:1fr;width:100%}.adminForm span{grid-column:1;text-align:left}.adminActive{flex-direction:column;align-items:stretch;width:100%}.adminActive button{width:100%}.card{padding:14px}.summaryLine{grid-template-columns:32px 1fr 68px;font-size:15px}.summaryLine em:last-child{grid-column:2/4;text-align:right}.total{font-size:22px}footer{margin:0 7px 9px;font-size:9px;letter-spacing:.09em}.loginFrame{padding:22px}.loginFrame h1{font-size:31px}.loginFrame h2{font-size:21px}.loginLogo{width:130px}.memberTotalBox{flex-direction:column;align-items:flex-start}.memberTotalBox strong{font-size:24px}}
+@media(max-width:760px){.page{padding:5px}.frame{min-height:calc(100dvh - 10px)}.hero{height:auto;min-height:245px}.logo{width:104px;left:8px;top:8px}.logoRight{display:none}.memberLogout{right:8px;bottom:8px;padding:7px 10px}.deadlineBar{width:calc(100% - 14px);margin:7px auto;padding:8px 10px;font-size:12px}.headline{padding:118px 10px 18px}.headline h1{font-size:34px;letter-spacing:.035em;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em;white-space:normal}.headline p{min-width:0;width:100%;font-size:13px;letter-spacing:.11em;white-space:normal}.content{padding:0 7px 10px}.twoCols,.shirtGrid,.twoProductCols,.bottomCards{grid-template-columns:1fr}.overviewHead{flex-direction:column}.adminBox{justify-content:flex-start}.adminForm{grid-template-columns:1fr;width:100%}.adminForm span{grid-column:1;text-align:left}.adminActive{flex-direction:column;align-items:stretch;width:100%}.adminActive button{width:100%}.card{padding:14px}.summaryLine{grid-template-columns:32px 1fr 68px;font-size:15px}.summaryLine em:last-child{grid-column:2/4;text-align:right}.total{font-size:22px}footer{margin:0 7px 9px;font-size:9px;letter-spacing:.09em}.loginFrame{padding:22px}.loginFrame h1{font-size:31px}.loginFrame h2{font-size:21px}.loginLogo{width:130px}.memberTotalBox{flex-direction:column;align-items:flex-start}.memberTotalBox strong{font-size:24px}}
 @media(max-width:420px){.hero{min-height:232px}.headline{padding-top:112px}.headline h1{font-size:29px}.headline h2{font-size:19px}.headline p{font-size:12px}.logo{width:92px}.redTitle{font-size:17px}.smallText{margin-left:0}.tableWrap{border-top:1px solid #242424}.passwordPanel{padding:10px}.deadlineBox span{font-size:18px}}
 `;
