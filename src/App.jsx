@@ -108,19 +108,48 @@ export default function App() {
     setForm({ ...form, [key]: value });
   }
 
-  function exportCSV() {
-    const header = ["Name", "Spitzname", "T-Shirt Größe", "T-Shirt Farbe", "T-Shirt Anzahl", "Polo Größe", "Polo Anzahl", "Hoodie Größe", "Hoodie Anzahl", "Gesamtpreis"];
-    const rows = orders.map((o) => [o.name, o.nick, o.tshirtSize, o.tshirtColor, o.tshirtQty, o.poloSize, o.poloQty, o.hoodieSize, o.hoodieQty, euro(calc(o))]);
-    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replaceAll('"', '""')}"`).join(";")).join("
-");
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "demon-lords-bestellung.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+ function exportCSV() {
+  const header = [
+    "Name",
+    "Spitzname",
+    "T-Shirt Größe",
+    "T-Shirt Farbe",
+    "T-Shirt Anzahl",
+    "Polo Größe",
+    "Polo Anzahl",
+    "Hoodie Größe",
+    "Hoodie Anzahl",
+    "Gesamtpreis",
+  ];
+
+  const rows = orders.map((o) => [
+    o.name,
+    o.nick,
+    o.tshirtSize,
+    o.tshirtColor,
+    o.tshirtQty,
+    o.poloSize,
+    o.poloQty,
+    o.hoodieSize,
+    o.hoodieQty,
+    euro(calc(o)),
+  ]);
+
+  const csv = [header, ...rows]
+    .map((row) => row.join(";"))
+    .join("\n");
+
+  const blob = new Blob(["\ufeff" + csv], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "demon-lords-bestellung.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
   return (
     <>
