@@ -211,11 +211,15 @@ export default function App() {
               </form>
             </section>
 
-            <section className="panel overviewPanel">
+            <section className={`panel overviewPanel ${isAdmin ? "adminView" : ""}`}>
               <div className="overviewHead">
                 <div>
                   <h3 className="redTitle">▣ BESTELLÜBERSICHT</h3>
-                  <p className="smallText">Alle Einträge werden hier in Echtzeit angezeigt.</p>
+                  <p className="smallText">
+                    {isAdmin
+                      ? "Admin-Ansicht: vollständige Bestellliste mit Preisen."
+                      : "Mitglieder-Ansicht: sichtbar ist nur, wer sich bereits eingetragen hat."}
+                  </p>
                 </div>
 
                 <div className="adminBox">
@@ -241,49 +245,67 @@ export default function App() {
 
               <div className="tableWrap">
                 <table>
-                  <thead>
-                    <tr>
-                      <th rowSpan="2">Name</th>
-                      <th rowSpan="2">Spitzname</th>
-                      <th colSpan="4">T-Shirt</th>
-                      <th colSpan="3">Polo-Shirt</th>
-                      <th colSpan="3">Hoodie</th>
-                      <th rowSpan="2">Gesamt</th>
-                      {isAdmin && <th rowSpan="2"></th>}
-                    </tr>
-                    <tr>
-                      <th>Gr.</th><th>Farbe</th><th>Anz.</th><th>Preis</th>
-                      <th>Gr.</th><th>Anz.</th><th>Preis</th>
-                      <th>Gr.</th><th>Anz.</th><th>Preis</th>
-                    </tr>
-                  </thead>
+                  {isAdmin ? (
+                    <thead>
+                      <tr>
+                        <th rowSpan="2">Name</th>
+                        <th rowSpan="2">Spitzname</th>
+                        <th colSpan="4">T-Shirt</th>
+                        <th colSpan="3">Polo-Shirt</th>
+                        <th colSpan="3">Hoodie</th>
+                        <th rowSpan="2">Gesamt</th>
+                        <th rowSpan="2"></th>
+                      </tr>
+                      <tr>
+                        <th>Gr.</th><th>Farbe</th><th>Anz.</th><th>Preis</th>
+                        <th>Gr.</th><th>Anz.</th><th>Preis</th>
+                        <th>Gr.</th><th>Anz.</th><th>Preis</th>
+                      </tr>
+                    </thead>
+                  ) : (
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Spitzname</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                  )}
 
                   <tbody>
                     {orders.length === 0 && (
                       <tr>
-                        <td colSpan={isAdmin ? 14 : 13} className="empty">Noch keine Bestellungen eingetragen.</td>
+                        <td colSpan={isAdmin ? 14 : 3} className="empty">Noch keine Bestellungen eingetragen.</td>
                       </tr>
                     )}
 
                     {orders.map((o, i) => (
                       <tr key={i}>
-                        <td>{o.name}</td>
-                        <td>{o.nick}</td>
-                        <td>{o.tshirtSize}</td>
-                        <td>{o.tshirtColor}</td>
-                        <td>{o.tshirtQty}</td>
-                        <td>{euro(o.tshirtQty * prices.tshirt)}</td>
-                        <td>{o.poloQty > 0 ? o.poloSize : "-"}</td>
-                        <td>{o.poloQty}</td>
-                        <td>{euro(o.poloQty * prices.polo)}</td>
-                        <td>{o.hoodieQty > 0 ? o.hoodieSize : "-"}</td>
-                        <td>{o.hoodieQty}</td>
-                        <td>{euro(o.hoodieQty * prices.hoodie)}</td>
-                        <td className="price">{euro(calc(o))}</td>
-                        {isAdmin && (
-                          <td>
-                            <button className="delete" onClick={() => deleteOrder(i)}>🗑</button>
-                          </td>
+                        {isAdmin ? (
+                          <>
+                            <td>{o.name}</td>
+                            <td>{o.nick}</td>
+                            <td>{o.tshirtSize}</td>
+                            <td>{o.tshirtColor}</td>
+                            <td>{o.tshirtQty}</td>
+                            <td>{euro(o.tshirtQty * prices.tshirt)}</td>
+                            <td>{o.poloQty > 0 ? o.poloSize : "-"}</td>
+                            <td>{o.poloQty}</td>
+                            <td>{euro(o.poloQty * prices.polo)}</td>
+                            <td>{o.hoodieQty > 0 ? o.hoodieSize : "-"}</td>
+                            <td>{o.hoodieQty}</td>
+                            <td>{euro(o.hoodieQty * prices.hoodie)}</td>
+                            <td className="price">{euro(calc(o))}</td>
+                            <td>
+                              <button className="delete" onClick={() => deleteOrder(i)}>🗑</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td>{o.name}</td>
+                            <td>{o.nick || "-"}</td>
+                            <td className="memberStatus">Eingetragen</td>
+                          </>
                         )}
                       </tr>
                     ))}
@@ -410,9 +432,9 @@ textarea{height:40px;padding-top:9px;resize:none}
 .submit:hover,.export:hover,.delete:hover{filter:brightness(1.15)}.privacy{margin:-5px 0 0;text-align:center;color:#aaa;font-size:12px;font-weight:300}
 
 .overviewHead{$1}.adminBox{display:flex;align-items:flex-start;justify-content:flex-end}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm input{height:40px;margin:0}.adminForm button,.logout{height:40px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;font-size:14px;text-transform:uppercase;cursor:pointer}.adminForm span{grid-column:1/3;color:#ff1c15;font-size:12px;text-align:right}.adminActive{display:flex;gap:8px;align-items:center}.logout{border-color:#555;color:#bbb}.export{align-self:start;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:10px 18px;font-family:'Oswald',Arial,sans-serif;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.03em}
-.tableWrap{overflow:auto;flex:1;min-height:225px;max-height:46vh}table{width:100%;min-width:0;border-collapse:collapse;font-size:13px;table-layout:auto}th,td{padding:8px 8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}th{color:#f5f5f5;font-weight:600;letter-spacing:.02em}th[colspan]{text-align:center}tr:hover td{background:rgba(255,255,255,.035)}.price{color:#ff1610;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:28px}
+.tableWrap{overflow:auto;flex:1;min-height:225px;max-height:46vh}table{width:100%;min-width:0;border-collapse:collapse;font-size:13px;table-layout:auto}th,td{padding:8px 8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}th{color:#f5f5f5;font-weight:600;letter-spacing:.02em}th[colspan]{text-align:center}tr:hover td{background:rgba(255,255,255,.035)}.price{color:#ff1610;font-weight:700}.memberStatus{color:#55ff7a;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:28px}
 
-.bottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:14px;padding:14px;flex:0 0 auto}.card{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:18px 24px;box-shadow:inset 0 0 28px rgba(255,255,255,.035)}.card h3{margin:0 0 14px;text-align:center;color:#f01b15;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}.summaryLine{display:grid;grid-template-columns:38px 1fr 72px 105px;align-items:center;gap:7px;margin-bottom:7px;font-size:18px}.summaryLine span,.priceLine span{font-size:28px;filter:saturate(1.25)}.summaryLine em,.priceLine em{font-style:normal}.total{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #555;color:#f01b15;font-size:26px;font-weight:700}.priceLine{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #333;font-size:18px}.priceLine:last-child{border-bottom:0}
+.bottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:14px;padding:14px;flex:0 0 auto}.overviewPanel:not(.adminView) .bottomCards{display:none}.card{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:18px 24px;box-shadow:inset 0 0 28px rgba(255,255,255,.035)}.card h3{margin:0 0 14px;text-align:center;color:#f01b15;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}.summaryLine{display:grid;grid-template-columns:38px 1fr 72px 105px;align-items:center;gap:7px;margin-bottom:7px;font-size:18px}.summaryLine span,.priceLine span{font-size:28px;filter:saturate(1.25)}.summaryLine em,.priceLine em{font-style:normal}.total{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #555;color:#f01b15;font-size:26px;font-weight:700}.priceLine{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #333;font-size:18px}.priceLine:last-child{border-bottom:0}
 footer{margin:0 18px 14px;border:1px solid #242424;border-radius:8px;background:#050505;color:#d0d0d0;text-align:center;padding:11px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;flex:0 0 auto}
 
 @media(max-width:1200px){.frame{min-height:auto}.hero{height:auto;min-height:185px}.content{grid-template-columns:1fr}.formPanel{height:auto;overflow:visible}.overviewPanel{height:auto}.tableWrap{max-height:none;flex:none}.logo{width:140px}.headline{padding-left:155px;padding-right:155px}.headline h1{font-size:54px}.headline h2{font-size:32px}.headline p{font-size:18px}}
