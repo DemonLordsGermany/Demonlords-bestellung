@@ -3,8 +3,12 @@ import { useState } from "react";
 export default function App() {
   const sizes = ["S", "M", "L", "XL", "XXL", "3XL", "4XL"];
   const prices = { tshirt: 20, polo: 30, hoodie: 40 };
+  const ADMIN_PASSWORD = "DemonLords2026";
 
   const [orders, setOrders] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminError, setAdminError] = useState("");
   const [form, setForm] = useState({
     name: "",
     nick: "",
@@ -56,6 +60,29 @@ export default function App() {
       hoodieQty: 0,
       note: "",
     });
+  }
+
+  function adminLogin(e) {
+    e.preventDefault();
+
+    if (adminPassword === ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setAdminPassword("");
+      setAdminError("");
+    } else {
+      setAdminError("Falsches Passwort");
+    }
+  }
+
+  function adminLogout() {
+    setIsAdmin(false);
+    setAdminPassword("");
+    setAdminError("");
+  }
+
+  function deleteOrder(index) {
+    if (!isAdmin) return;
+    setOrders(orders.filter((_, i) => i !== index));
   }
 
   function exportCSV() {
@@ -190,7 +217,26 @@ export default function App() {
                   <h3 className="redTitle">▣ BESTELLÜBERSICHT</h3>
                   <p className="smallText">Alle Einträge werden hier in Echtzeit angezeigt.</p>
                 </div>
-                <button className="export" onClick={exportCSV}>▦ EXCEL EXPORT</button>
+
+                <div className="adminBox">
+                  {!isAdmin ? (
+                    <form className="adminForm" onSubmit={adminLogin}>
+                      <input
+                        type="password"
+                        placeholder="Admin Passwort"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                      />
+                      <button type="submit">Admin Login</button>
+                      {adminError && <span>{adminError}</span>}
+                    </form>
+                  ) : (
+                    <div className="adminActive">
+                      <button className="export" onClick={exportCSV}>▦ EXCEL EXPORT</button>
+                      <button className="logout" onClick={adminLogout}>Logout</button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="tableWrap">
@@ -203,7 +249,7 @@ export default function App() {
                       <th colSpan="3">Polo-Shirt</th>
                       <th colSpan="3">Hoodie</th>
                       <th rowSpan="2">Gesamt</th>
-                      <th rowSpan="2"></th>
+                      {isAdmin && <th rowSpan="2"></th>}
                     </tr>
                     <tr>
                       <th>Gr.</th><th>Farbe</th><th>Anz.</th><th>Preis</th>
@@ -215,7 +261,7 @@ export default function App() {
                   <tbody>
                     {orders.length === 0 && (
                       <tr>
-                        <td colSpan="14" className="empty">Noch keine Bestellungen eingetragen.</td>
+                        <td colSpan={isAdmin ? 14 : 13} className="empty">Noch keine Bestellungen eingetragen.</td>
                       </tr>
                     )}
 
@@ -234,9 +280,11 @@ export default function App() {
                         <td>{o.hoodieQty}</td>
                         <td>{euro(o.hoodieQty * prices.hoodie)}</td>
                         <td className="price">{euro(calc(o))}</td>
-                        <td>
-                          <button className="delete" onClick={() => setOrders(orders.filter((_, index) => index !== i))}>🗑</button>
-                        </td>
+                        {isAdmin && (
+                          <td>
+                            <button className="delete" onClick={() => deleteOrder(i)}>🗑</button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -361,12 +409,12 @@ textarea{height:40px;padding-top:9px;resize:none}
 .submit{height:42px;border:0;border-radius:5px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;font-family:'Oswald',Arial,sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;box-shadow:0 0 16px rgba(255,0,0,.45)}
 .submit:hover,.export:hover,.delete:hover{filter:brightness(1.15)}.privacy{margin:-5px 0 0;text-align:center;color:#aaa;font-size:12px;font-weight:300}
 
-.overviewHead{display:flex;justify-content:space-between;gap:16px;padding:14px 16px;border-bottom:1px solid #272727;flex:0 0 auto}.export{align-self:start;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:10px 18px;font-family:'Oswald',Arial,sans-serif;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.03em}
+.overviewHead{$1}.adminBox{display:flex;align-items:flex-start;justify-content:flex-end}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm input{height:40px;margin:0}.adminForm button,.logout{height:40px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;font-size:14px;text-transform:uppercase;cursor:pointer}.adminForm span{grid-column:1/3;color:#ff1c15;font-size:12px;text-align:right}.adminActive{display:flex;gap:8px;align-items:center}.logout{border-color:#555;color:#bbb}.export{align-self:start;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:10px 18px;font-family:'Oswald',Arial,sans-serif;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.03em}
 .tableWrap{overflow:auto;flex:1;min-height:225px;max-height:46vh}table{width:100%;min-width:0;border-collapse:collapse;font-size:13px;table-layout:auto}th,td{padding:8px 8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}th{color:#f5f5f5;font-weight:600;letter-spacing:.02em}th[colspan]{text-align:center}tr:hover td{background:rgba(255,255,255,.035)}.price{color:#ff1610;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:28px}
 
 .bottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:14px;padding:14px;flex:0 0 auto}.card{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:18px 24px;box-shadow:inset 0 0 28px rgba(255,255,255,.035)}.card h3{margin:0 0 14px;text-align:center;color:#f01b15;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}.summaryLine{display:grid;grid-template-columns:38px 1fr 72px 105px;align-items:center;gap:7px;margin-bottom:7px;font-size:18px}.summaryLine span,.priceLine span{font-size:28px;filter:saturate(1.25)}.summaryLine em,.priceLine em{font-style:normal}.total{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #555;color:#f01b15;font-size:26px;font-weight:700}.priceLine{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #333;font-size:18px}.priceLine:last-child{border-bottom:0}
 footer{margin:0 18px 14px;border:1px solid #242424;border-radius:8px;background:#050505;color:#d0d0d0;text-align:center;padding:11px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;flex:0 0 auto}
 
 @media(max-width:1200px){.frame{min-height:auto}.hero{height:auto;min-height:185px}.content{grid-template-columns:1fr}.formPanel{height:auto;overflow:visible}.overviewPanel{height:auto}.tableWrap{max-height:none;flex:none}.logo{width:140px}.headline{padding-left:155px;padding-right:155px}.headline h1{font-size:54px}.headline h2{font-size:32px}.headline p{font-size:18px}}
-@media(max-width:760px){.page{padding:6px}.frame{min-height:calc(100vh - 12px)}.hero{height:auto;min-height:250px}.logo{width:108px;left:8px;top:8px}.logoRight{display:none}.headline{padding:120px 12px 18px}.headline h1{font-size:34px;letter-spacing:.035em;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:13px;letter-spacing:.11em;white-space:normal}.content{padding:0 8px 12px}.twoCols,.shirtGrid,.twoProductCols,.bottomCards{grid-template-columns:1fr}.overviewHead{flex-direction:column}.card{padding:18px}.summaryLine{grid-template-columns:34px 1fr 70px;font-size:16px}.summaryLine em:last-child{grid-column:2/4;text-align:right}.total{font-size:23px}footer{margin:0 8px 10px;font-size:10px;letter-spacing:.1em}}
+@media(max-width:760px){.adminBox{justify-content:flex-start}.adminForm{grid-template-columns:1fr}.adminForm span{grid-column:1;text-align:left}.adminActive{flex-direction:column;align-items:stretch}.adminActive button{width:100%}.page{padding:6px}.frame{min-height:calc(100vh - 12px)}.hero{height:auto;min-height:250px}.logo{width:108px;left:8px;top:8px}.logoRight{display:none}.headline{padding:120px 12px 18px}.headline h1{font-size:34px;letter-spacing:.035em;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:13px;letter-spacing:.11em;white-space:normal}.content{padding:0 8px 12px}.twoCols,.shirtGrid,.twoProductCols,.bottomCards{grid-template-columns:1fr}.overviewHead{flex-direction:column}.card{padding:18px}.summaryLine{grid-template-columns:34px 1fr 70px;font-size:16px}.summaryLine em:last-child{grid-column:2/4;text-align:right}.total{font-size:23px}footer{margin:0 8px 10px;font-size:10px;letter-spacing:.1em}}
 `;
