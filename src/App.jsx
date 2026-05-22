@@ -1,14 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function App() {
   const sizes = ["S", "M", "L", "XL", "XXL", "3XL", "4XL"];
   const prices = { tshirt: 20, polo: 30, hoodie: 40 };
-  const ADMIN_PASSWORD = "DemonLords2026";
 
-  const [orders, setOrders] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
+  const DEFAULT_ADMIN_PASSWORD = "DemonLords2026";
+  const DEFAULT_MEMBER_PASSWORD = "DL2026";
+
+  const [adminPasswordSaved, setAdminPasswordSaved] = useState(
+    localStorage.getItem("dl_admin_password") || DEFAULT_ADMIN_PASSWORD
+  );
+  const [memberPasswordSaved, setMemberPasswordSaved] = useState(
+    localStorage.getItem("dl_member_password") || DEFAULT_MEMBER_PASSWORD
+  );
+
+  const [isMemberLoggedIn, setIsMemberLoggedIn] = useState(
+    sessionStorage.getItem("dl_member_logged_in") === "true"
+  );
+  const [isAdmin, setIsAdmin] = useState(
+    sessionStorage.getItem("dl_admin_logged_in") === "true"
+  );
+
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  const [adminPasswordInput, setAdminPasswordInput] = useState("");
   const [adminError, setAdminError] = useState("");
+
+  const [newMemberPassword, setNewMemberPassword] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [settingsMessage, setSettingsMessage] = useState("");
+
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem("dl_orders");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [form, setForm] = useState({
     name: "",
     nick: "",
@@ -21,6 +48,10 @@ export default function App() {
     hoodieQty: 0,
     note: "",
   });
+
+  useEffect(() => {
+    localStorage.setItem("dl_orders", JSON.stringify(orders));
+  }, [orders]);
 
   const calc = (o) =>
     Number(o.tshirtQty) * prices.tshirt +
@@ -35,8 +66,86 @@ export default function App() {
   const totalHoodies = orders.reduce((s, o) => s + Number(o.hoodieQty), 0);
   const total = orders.reduce((s, o) => s + calc(o), 0);
 
+  function login(e) {
+    e.preventDefault();
+
+    if (loginPassword === adminPasswordSaved) {
+      setIsMemberLoggedIn(true);
+      setIsAdmin(true);
+      sessionStorage.setItem("dl_member_logged_in", "true");
+      sessionStorage.setItem("dl_admin_logged_in", "true");
+      setLoginPassword("");
+      setLoginError("");
+      return;
+    }
+
+    if (loginPassword === memberPasswordSaved) {
+      setIsMemberLoggedIn(true);
+      setIsAdmin(false);
+      sessionStorage.setItem("dl_member_logged_in", "true");
+      sessionStorage.removeItem("dl_admin_logged_in");
+      setLoginPassword("");
+      setLoginError("");
+      return;
+    }
+
+    setLoginError("Falsches Passwort");
+  }
+
+  function logout() {
+    setIsMemberLoggedIn(false);
+    setIsAdmin(false);
+    sessionStorage.removeItem("dl_member_logged_in");
+    sessionStorage.removeItem("dl_admin_logged_in");
+    setLoginPassword("");
+    setAdminPasswordInput("");
+    setLoginError("");
+    setAdminError("");
+  }
+
+  function adminLogin(e) {
+    e.preventDefault();
+
+    if (adminPasswordInput === adminPasswordSaved) {
+      setIsAdmin(true);
+      sessionStorage.setItem("dl_admin_logged_in", "true");
+      setAdminPasswordInput("");
+      setAdminError("");
+    } else {
+      setAdminError("Falsches Admin-Passwort");
+    }
+  }
+
+  function adminLogout() {
+    setIsAdmin(false);
+    sessionStorage.removeItem("dl_admin_logged_in");
+    setAdminPasswordInput("");
+    setAdminError("");
+  }
+
+  function savePasswords(e) {
+    e.preventDefault();
+
+    if (newMemberPassword.trim().length >= 4) {
+      localStorage.setItem("dl_member_password", newMemberPassword.trim());
+      setMemberPasswordSaved(newMemberPassword.trim());
+    }
+
+    if (newAdminPassword.trim().length >= 6) {
+      localStorage.setItem("dl_admin_password", newAdminPassword.trim());
+      setAdminPasswordSaved(newAdminPassword.trim());
+    }
+
+    setNewMemberPassword("");
+    setNewAdminPassword("");
+    setSettingsMessage("Passwörter wurden aktualisiert.");
+
+    setTimeout(() => setSettingsMessage(""), 3000);
+  }
+
   function submit(e) {
     e.preventDefault();
+    if (!isMemberLoggedIn) return;
     if (!form.name.trim()) return;
 
     setOrders([
@@ -45,6 +154,7 @@ export default function App() {
         ...form,
         poloSize: form.poloQty > 0 ? form.poloSize : "-",
         hoodieSize: form.hoodieQty > 0 ? form.hoodieSize : "-",
+        createdAt: new Date().toLocaleString("de-DE"),
       },
     ]);
 
@@ -62,30 +172,14 @@ export default function App() {
     });
   }
 
-  function adminLogin(e) {
-    e.preventDefault();
-
-    if (adminPassword === ADMIN_PASSWORD) {
-      setIsAdmin(true);
-      setAdminPassword("");
-      setAdminError("");
-    } else {
-      setAdminError("Falsches Passwort");
-    }
-  }
-
-  function adminLogout() {
-    setIsAdmin(false);
-    setAdminPassword("");
-    setAdminError("");
-  }
-
   function deleteOrder(index) {
     if (!isAdmin) return;
     setOrders(orders.filter((_, i) => i !== index));
   }
 
   function exportCSV() {
+    if (!isAdmin) return;
+
     const header = [
       "Name",
       "Spitzname",
@@ -96,7 +190,9 @@ export default function App() {
       "Polo Anzahl",
       "Hoodie Groesse",
       "Hoodie Anzahl",
+      "Hinweise",
       "Gesamtpreis",
+      "Datum",
     ];
 
     const rows = orders.map((o) => [
@@ -109,7 +205,9 @@ export default function App() {
       o.poloQty,
       o.hoodieSize,
       o.hoodieQty,
+      o.note || "",
       euro(calc(o)),
+      o.createdAt || "",
     ]);
 
     const csv = [header, ...rows]
@@ -128,6 +226,41 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
+  if (!isMemberLoggedIn) {
+    return (
+      <>
+        <style>{styles}</style>
+        <main className="page loginPage">
+          <div className="loginFrame">
+            <div className="loginSmoke" />
+            <img src="/logo.png" alt="Demon Lords Germany Logo" className="loginLogo" />
+            <h1>DEMON LORDS</h1>
+            <h2>GERMANY</h2>
+            <p className="loginSubline">MITGLIEDER LOGIN</p>
+
+            <form className="loginBox" onSubmit={login}>
+              <label>
+                Passwort
+                <input
+                  type="password"
+                  placeholder="Mitglieder- oder Admin-Passwort"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                />
+              </label>
+
+              {loginError && <div className="loginError">{loginError}</div>}
+
+              <button type="submit">Einloggen</button>
+            </form>
+
+            <p className="loginHint">Nur Vereinsmitglieder mit Passwort können eine Bestellung eintragen.</p>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <style>{styles}</style>
@@ -137,6 +270,7 @@ export default function App() {
             <div className="smoke" />
             <img src="/logo.png" alt="Demon Lords Germany Logo" className="logo logoLeft" />
             <img src="/logo.png" alt="Demon Lords Germany Logo" className="logo logoRight" />
+            <button className="memberLogout" onClick={logout}>Logout</button>
 
             <div className="headline">
               <h1>DEMON LORDS</h1>
@@ -154,21 +288,12 @@ export default function App() {
                 <div className="twoCols">
                   <label>
                     Name <span>*</span>
-                    <input
-                      required
-                      placeholder="Dein Name"
-                      value={form.name}
-                      onChange={(e) => set("name", e.target.value)}
-                    />
+                    <input required placeholder="Dein Name" value={form.name} onChange={(e) => set("name", e.target.value)} />
                   </label>
 
                   <label>
-                    Spitzname <span>*</span>
-                    <input
-                      placeholder="Dein Spitzname"
-                      value={form.nick}
-                      onChange={(e) => set("nick", e.target.value)}
-                    />
+                    Spitzname
+                    <input placeholder="Dein Spitzname" value={form.nick} onChange={(e) => set("nick", e.target.value)} />
                   </label>
                 </div>
 
@@ -199,11 +324,7 @@ export default function App() {
 
                 <label>
                   Hinweise optional
-                  <textarea
-                    placeholder="Hier kannst du optional etwas angeben..."
-                    value={form.note}
-                    onChange={(e) => set("note", e.target.value)}
-                  />
+                  <textarea placeholder="Hier kannst du optional etwas angeben..." value={form.note} onChange={(e) => set("note", e.target.value)} />
                 </label>
 
                 <button className="submit" type="submit">➤ BESTELLUNG ABSENDEN</button>
@@ -228,8 +349,8 @@ export default function App() {
                       <input
                         type="password"
                         placeholder="Admin Passwort"
-                        value={adminPassword}
-                        onChange={(e) => setAdminPassword(e.target.value)}
+                        value={adminPasswordInput}
+                        onChange={(e) => setAdminPasswordInput(e.target.value)}
                       />
                       <button type="submit">Admin Login</button>
                       {adminError && <span>{adminError}</span>}
@@ -237,11 +358,39 @@ export default function App() {
                   ) : (
                     <div className="adminActive">
                       <button className="export" onClick={exportCSV}>▦ EXCEL EXPORT</button>
-                      <button className="logout" onClick={adminLogout}>Logout</button>
+                      <button className="logout" onClick={adminLogout}>Admin Logout</button>
                     </div>
                   )}
                 </div>
               </div>
+
+              {isAdmin && (
+                <form className="passwordPanel" onSubmit={savePasswords}>
+                  <h3>Passwörter ändern</h3>
+                  <div className="passwordGrid">
+                    <label>
+                      Neues Mitglieder-Passwort
+                      <input
+                        type="text"
+                        placeholder="mind. 4 Zeichen"
+                        value={newMemberPassword}
+                        onChange={(e) => setNewMemberPassword(e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Neues Admin-Passwort
+                      <input
+                        type="text"
+                        placeholder="mind. 6 Zeichen"
+                        value={newAdminPassword}
+                        onChange={(e) => setNewAdminPassword(e.target.value)}
+                      />
+                    </label>
+                    <button type="submit">Passwörter speichern</button>
+                  </div>
+                  {settingsMessage && <p>{settingsMessage}</p>}
+                </form>
+              )}
 
               <div className="tableWrap">
                 <table>
@@ -254,6 +403,7 @@ export default function App() {
                         <th colSpan="3">Polo-Shirt</th>
                         <th colSpan="3">Hoodie</th>
                         <th rowSpan="2">Gesamt</th>
+                        <th rowSpan="2">Datum</th>
                         <th rowSpan="2"></th>
                       </tr>
                       <tr>
@@ -275,7 +425,7 @@ export default function App() {
                   <tbody>
                     {orders.length === 0 && (
                       <tr>
-                        <td colSpan={isAdmin ? 14 : 3} className="empty">Noch keine Bestellungen eingetragen.</td>
+                        <td colSpan={isAdmin ? 15 : 3} className="empty">Noch keine Bestellungen eingetragen.</td>
                       </tr>
                     )}
 
@@ -284,7 +434,7 @@ export default function App() {
                         {isAdmin ? (
                           <>
                             <td>{o.name}</td>
-                            <td>{o.nick}</td>
+                            <td>{o.nick || "-"}</td>
                             <td>{o.tshirtSize}</td>
                             <td>{o.tshirtColor}</td>
                             <td>{o.tshirtQty}</td>
@@ -296,9 +446,8 @@ export default function App() {
                             <td>{o.hoodieQty}</td>
                             <td>{euro(o.hoodieQty * prices.hoodie)}</td>
                             <td className="price">{euro(calc(o))}</td>
-                            <td>
-                              <button className="delete" onClick={() => deleteOrder(i)}>🗑</button>
-                            </td>
+                            <td>{o.createdAt || "-"}</td>
+                            <td><button className="delete" onClick={() => deleteOrder(i)}>🗑</button></td>
                           </>
                         ) : (
                           <>
@@ -404,9 +553,10 @@ body{font-family:'Oswald',Arial,sans-serif;color:#f2f2f2;background:#000;overflo
 .frame{width:min(100%,1540px);min-height:calc(100vh - 20px);margin:0 auto;border:1px solid #8f0907;border-radius:7px;background:#030303;overflow:hidden;box-shadow:0 0 38px rgba(150,0,0,.42);display:flex;flex-direction:column}
 
 .hero{position:relative;height:170px;min-height:170px;overflow:hidden;background:radial-gradient(circle at 50% 18%,#252525 0%,#101010 34%,#050505 62%,#000 100%);border-bottom:1px solid #240000;flex:0 0 auto}
-.smoke{position:absolute;inset:0;opacity:.75;background:radial-gradient(circle at 11% 17%,rgba(190,0,0,.45),transparent 17%),radial-gradient(circle at 89% 17%,rgba(190,0,0,.45),transparent 17%),radial-gradient(circle at 50% 15%,rgba(255,255,255,.13),transparent 29%),linear-gradient(90deg,rgba(120,0,0,.35),transparent 24%,transparent 76%,rgba(120,0,0,.35))}
+.smoke,.loginSmoke{position:absolute;inset:0;opacity:.75;background:radial-gradient(circle at 11% 17%,rgba(190,0,0,.45),transparent 17%),radial-gradient(circle at 89% 17%,rgba(190,0,0,.45),transparent 17%),radial-gradient(circle at 50% 15%,rgba(255,255,255,.13),transparent 29%),linear-gradient(90deg,rgba(120,0,0,.35),transparent 24%,transparent 76%,rgba(120,0,0,.35))}
 .logo{position:absolute;top:10px;width:150px;object-fit:contain;z-index:2;filter:drop-shadow(0 0 8px rgba(255,0,0,.45)) contrast(1.06) saturate(1.04)}
 .logoLeft{left:28px}.logoRight{right:28px}
+.memberLogout{position:absolute;right:18px;bottom:14px;z-index:5;border:1px solid #555;background:#070707;color:#ddd;border-radius:5px;padding:8px 14px;font-family:'Oswald',Arial,sans-serif;text-transform:uppercase;cursor:pointer}
 
 .headline{position:relative;z-index:3;text-align:center;padding-top:23px;margin:0 auto;max-width:920px;padding-left:185px;padding-right:185px}
 .headline h1{margin:0;font-family:'Rye',Georgia,serif;font-size:64px;line-height:.95;letter-spacing:.04em;color:#b91410;text-shadow:0 2px 0 #3a0000,0 0 6px rgba(230,0,0,.18);font-weight:400;white-space:nowrap}
@@ -429,14 +579,18 @@ textarea{height:40px;padding-top:9px;resize:none}
 .shirtGrid{display:grid;grid-template-columns:1fr 132px 58px;gap:11px;align-items:end}.twoProductCols{display:grid;grid-template-columns:1fr 66px;gap:22px}
 .sizeRow{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.sizeRow span{min-width:28px;text-align:center;color:#e7e7e7;border:1px solid #343434;border-radius:4px;background:rgba(0,0,0,.6);padding:1px 5px;font-size:13px}
 .submit{height:42px;border:0;border-radius:5px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;font-family:'Oswald',Arial,sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;box-shadow:0 0 16px rgba(255,0,0,.45)}
-.submit:hover,.export:hover,.delete:hover{filter:brightness(1.15)}.privacy{margin:-5px 0 0;text-align:center;color:#aaa;font-size:12px;font-weight:300}
+.submit:hover,.export:hover,.delete:hover,.memberLogout:hover,.loginBox button:hover{filter:brightness(1.15)}.privacy{margin:-5px 0 0;text-align:center;color:#aaa;font-size:12px;font-weight:300}
 
-.overviewHead{$1}.adminBox{display:flex;align-items:flex-start;justify-content:flex-end}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm input{height:40px;margin:0}.adminForm button,.logout{height:40px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;font-size:14px;text-transform:uppercase;cursor:pointer}.adminForm span{grid-column:1/3;color:#ff1c15;font-size:12px;text-align:right}.adminActive{display:flex;gap:8px;align-items:center}.logout{border-color:#555;color:#bbb}.export{align-self:start;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:10px 18px;font-family:'Oswald',Arial,sans-serif;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.03em}
+.overviewHead{display:flex;justify-content:space-between;gap:16px;padding:14px 16px;border-bottom:1px solid #272727;flex:0 0 auto}.adminBox{display:flex;align-items:flex-start;justify-content:flex-end}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm input{height:40px;margin:0}.adminForm button,.logout{height:40px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;font-size:14px;text-transform:uppercase;cursor:pointer}.adminForm span{grid-column:1/3;color:#ff1c15;font-size:12px;text-align:right}.adminActive{display:flex;gap:8px;align-items:center}.logout{border-color:#555;color:#bbb}
+.export{align-self:start;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:10px 18px;font-family:'Oswald',Arial,sans-serif;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.03em}
+.passwordPanel{border-bottom:1px solid #242424;padding:12px 16px;background:rgba(0,0,0,.35);gap:8px}.passwordPanel h3{margin:0;color:#ef1b16;font-size:18px;text-transform:uppercase}.passwordPanel p{margin:4px 0 0;color:#55ff7a}.passwordGrid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}.passwordGrid button{height:36px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;text-transform:uppercase;cursor:pointer}
 .tableWrap{overflow:auto;flex:1;min-height:225px;max-height:46vh}table{width:100%;min-width:0;border-collapse:collapse;font-size:13px;table-layout:auto}th,td{padding:8px 8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}th{color:#f5f5f5;font-weight:600;letter-spacing:.02em}th[colspan]{text-align:center}tr:hover td{background:rgba(255,255,255,.035)}.price{color:#ff1610;font-weight:700}.memberStatus{color:#55ff7a;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:28px}
 
 .bottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:14px;padding:14px;flex:0 0 auto}.overviewPanel:not(.adminView) .bottomCards{display:none}.card{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:18px 24px;box-shadow:inset 0 0 28px rgba(255,255,255,.035)}.card h3{margin:0 0 14px;text-align:center;color:#f01b15;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}.summaryLine{display:grid;grid-template-columns:38px 1fr 72px 105px;align-items:center;gap:7px;margin-bottom:7px;font-size:18px}.summaryLine span,.priceLine span{font-size:28px;filter:saturate(1.25)}.summaryLine em,.priceLine em{font-style:normal}.total{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #555;color:#f01b15;font-size:26px;font-weight:700}.priceLine{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #333;font-size:18px}.priceLine:last-child{border-bottom:0}
 footer{margin:0 18px 14px;border:1px solid #242424;border-radius:8px;background:#050505;color:#d0d0d0;text-align:center;padding:11px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;flex:0 0 auto}
 
-@media(max-width:1200px){.frame{min-height:auto}.hero{height:auto;min-height:185px}.content{grid-template-columns:1fr}.formPanel{height:auto;overflow:visible}.overviewPanel{height:auto}.tableWrap{max-height:none;flex:none}.logo{width:140px}.headline{padding-left:155px;padding-right:155px}.headline h1{font-size:54px}.headline h2{font-size:32px}.headline p{font-size:18px}}
-@media(max-width:760px){.adminBox{justify-content:flex-start}.adminForm{grid-template-columns:1fr}.adminForm span{grid-column:1;text-align:left}.adminActive{flex-direction:column;align-items:stretch}.adminActive button{width:100%}.page{padding:6px}.frame{min-height:calc(100vh - 12px)}.hero{height:auto;min-height:250px}.logo{width:108px;left:8px;top:8px}.logoRight{display:none}.headline{padding:120px 12px 18px}.headline h1{font-size:34px;letter-spacing:.035em;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:13px;letter-spacing:.11em;white-space:normal}.content{padding:0 8px 12px}.twoCols,.shirtGrid,.twoProductCols,.bottomCards{grid-template-columns:1fr}.overviewHead{flex-direction:column}.card{padding:18px}.summaryLine{grid-template-columns:34px 1fr 70px;font-size:16px}.summaryLine em:last-child{grid-column:2/4;text-align:right}.total{font-size:23px}footer{margin:0 8px 10px;font-size:10px;letter-spacing:.1em}}
+.loginPage{display:flex;align-items:center;justify-content:center}.loginFrame{position:relative;width:min(95vw,560px);overflow:hidden;border:1px solid #8f0907;border-radius:10px;background:radial-gradient(circle at top,#232323,#050505 65%,#000);padding:34px;box-shadow:0 0 42px rgba(160,0,0,.48);text-align:center}.loginLogo{position:relative;z-index:2;width:170px;filter:drop-shadow(0 0 10px rgba(255,0,0,.55));margin-bottom:10px}.loginFrame h1,.loginFrame h2,.loginSubline,.loginBox,.loginHint{position:relative;z-index:2}.loginFrame h1{margin:0;font-family:'Rye',Georgia,serif;font-size:42px;color:#b91410;letter-spacing:.05em}.loginFrame h2{margin:5px 0 0;font-family:'Rye',Georgia,serif;font-size:27px;color:#ddd;letter-spacing:.2em}.loginSubline{margin:18px 0 22px;padding-top:12px;border-top:1px solid #8b0000;font-family:'Rye',Georgia,serif;letter-spacing:.18em;color:#ccc}.loginBox{display:flex;flex-direction:column;gap:14px;text-align:left}.loginBox button{height:44px;border:0;border-radius:5px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;font-family:'Oswald',Arial,sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;cursor:pointer}.loginError{color:#ff1c15;text-align:center;font-weight:700}.loginHint{margin:18px 0 0;color:#aaa;font-size:13px}
+
+@media(max-width:1200px){.frame{min-height:auto}.hero{height:auto;min-height:185px}.content{grid-template-columns:1fr}.formPanel{height:auto;overflow:visible}.overviewPanel{height:auto}.tableWrap{max-height:none;flex:none}.logo{width:140px}.headline{padding-left:155px;padding-right:155px}.headline h1{font-size:54px}.headline h2{font-size:32px}.headline p{font-size:18px}.passwordGrid{grid-template-columns:1fr}}
+@media(max-width:760px){.page{padding:6px}.frame{min-height:calc(100vh - 12px)}.hero{height:auto;min-height:250px}.logo{width:108px;left:8px;top:8px}.logoRight{display:none}.memberLogout{right:8px;bottom:8px;padding:7px 10px}.headline{padding:120px 12px 18px}.headline h1{font-size:34px;letter-spacing:.035em;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:13px;letter-spacing:.11em;white-space:normal}.content{padding:0 8px 12px}.twoCols,.shirtGrid,.twoProductCols,.bottomCards{grid-template-columns:1fr}.overviewHead{flex-direction:column}.adminBox{justify-content:flex-start}.adminForm{grid-template-columns:1fr}.adminForm span{grid-column:1;text-align:left}.adminActive{flex-direction:column;align-items:stretch}.adminActive button{width:100%}.card{padding:18px}.summaryLine{grid-template-columns:34px 1fr 70px;font-size:16px}.summaryLine em:last-child{grid-column:2/4;text-align:right}.total{font-size:23px}footer{margin:0 8px 10px;font-size:10px;letter-spacing:.1em}.loginFrame{padding:24px}.loginFrame h1{font-size:32px}.loginFrame h2{font-size:22px}.loginLogo{width:135px}}
 `;
