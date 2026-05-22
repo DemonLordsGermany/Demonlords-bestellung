@@ -121,6 +121,7 @@ export default function App() {
   const totalPolos = orders.reduce((s, o) => s + Number(o.poloQty || 0), 0);
   const totalHoodies = orders.reduce((s, o) => s + Number(o.hoodieQty || 0), 0);
   const total = orders.reduce((s, o) => s + calc(o), 0);
+  const currentOrderTotal = calc(form);
 
   const deadlineTime = new Date(settings.deadline).getTime();
   const timeLeft = Math.max(0, deadlineTime - now);
@@ -434,6 +435,11 @@ export default function App() {
                   <textarea placeholder="Hier kannst du optional etwas angeben..." value={form.note} onChange={(e) => set("note", e.target.value)} />
                 </label>
 
+                <div className="memberTotalBox">
+                  <span>Deine aktuelle Bestellsumme:</span>
+                  <strong>{euro(currentOrderTotal)}</strong>
+                </div>
+
                 {orderClosed && !isAdmin ? (
                   <div className="closedNotice">Bestellfrist abgelaufen — neue Bestellungen sind gesperrt.</div>
                 ) : (
@@ -696,7 +702,7 @@ textarea{height:40px;padding-top:9px;resize:none}
 .shirtGrid{display:grid;grid-template-columns:1fr 132px 58px;gap:11px;align-items:end}.twoProductCols{display:grid;grid-template-columns:1fr 66px;gap:22px}
 .sizeRow{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.sizeRow span{min-width:28px;text-align:center;color:#e7e7e7;border:1px solid #343434;border-radius:4px;background:rgba(0,0,0,.6);padding:1px 5px;font-size:13px}
 .submit{height:42px;border:0;border-radius:5px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;font-family:'Oswald',Arial,sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;box-shadow:0 0 16px rgba(255,0,0,.45)}
-.submit:hover,.export:hover,.delete:hover,.memberLogout:hover,.loginBox button:hover{filter:brightness(1.15)}.privacy{margin:-5px 0 0;text-align:center;color:#aaa;font-size:12px;font-weight:300}.closedNotice{border:1px solid #8b0000;background:rgba(120,0,0,.22);color:#ffb7b7;border-radius:5px;padding:12px;text-align:center;font-weight:700;text-transform:uppercase}
+.submit:hover,.export:hover,.delete:hover,.memberLogout:hover,.loginBox button:hover{filter:brightness(1.15)}.privacy{margin:-5px 0 0;text-align:center;color:#aaa;font-size:12px;font-weight:300}.closedNotice{border:1px solid #8b0000;background:rgba(120,0,0,.22);color:#ffb7b7;border-radius:5px;padding:12px;text-align:center;font-weight:700;text-transform:uppercase}.memberTotalBox{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:12px}.memberTotalBox span{color:#ddd;font-size:15px}.memberTotalBox strong{color:#ff2119;font-size:24px}
 .overviewHead{display:flex;justify-content:space-between;gap:16px;padding:14px 16px;border-bottom:1px solid #272727;flex:0 0 auto}.adminBox{display:flex;align-items:flex-start;justify-content:flex-end}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm input{height:40px;margin:0}.adminForm button,.logout{height:40px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;font-size:14px;text-transform:uppercase;cursor:pointer}.adminForm span{grid-column:1/3;color:#ff1c15;font-size:12px;text-align:right}.adminActive{display:flex;gap:8px;align-items:center}.logout{border-color:#555;color:#bbb}
 .export{align-self:start;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:10px 18px;font-family:'Oswald',Arial,sans-serif;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.03em}
 .passwordPanel{border-bottom:1px solid #242424;padding:12px 16px;background:rgba(0,0,0,.35);gap:8px}.passwordPanel h3{margin:0;color:#ef1b16;font-size:18px;text-transform:uppercase}.passwordPanel p{margin:4px 0 0;color:#55ff7a}.passwordGrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.passwordGrid button{height:36px;border:1px solid #8b0000;background:#070707;color:#eee;border-radius:5px;padding:0 14px;font-family:'Oswald',Arial,sans-serif;text-transform:uppercase;cursor:pointer}
