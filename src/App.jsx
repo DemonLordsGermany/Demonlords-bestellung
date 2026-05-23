@@ -8,7 +8,8 @@ import {
   setDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, storage } from "./firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function App() {
   const [activePage, setActivePage] = useState("start");
@@ -884,26 +885,76 @@ function AdminCMS() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState("");
   const [message, setMessage] = useState("");
-  const [cms, setCms] = useState({
+  const [activeAdminTab, setActiveAdminTab] = useState("start");
+
+  const defaultCms = {
     startTitle: "Willkommen bei den Demon Lords Germany",
     startText:
       "Wir stehen für Brotherhood, Loyalität, taktisches Teamplay und eine starke Community.",
+    startButtonPrimary: "Vereinskleidung ansehen",
+    startButtonSecondary: "Mehr über uns",
+
     aboutTitle: "Wer sind die Demon Lords Germany?",
     aboutText:
       "Demon Lords Germany ist eine taktische Magfed-Paintball-Community mit Fokus auf Teamplay, Zusammenhalt und professionelles Auftreten.",
+    aboutMission:
+      "Aufbau einer starken deutschen Magfed-Community mit professionellem Auftreten, hochwertiger Vereinskleidung und moderner Plattform für Mitglieder.",
+
+    teamTitle: "Team & Command Structure",
+    teamText:
+      "Klare Rollen. Klare Verantwortung. Ein Team. Unsere Rangstruktur sorgt für Organisation, Disziplin und professionelles Auftreten.",
+
+    eventsTitle: "Events & Einsätze",
+    eventsText:
+      "Hier findet ihr kommende Spieltage, Trainings, Teamtreffen und Scenario-Events der Demon Lords Germany.",
+    nextEventTitle: "Nächstes offizielles Team-Event",
+    nextEventText: "Sobald ein neuer Termin feststeht, wird er hier prominent angezeigt.",
+
+    galleryTitle: "Galerie",
+    galleryText:
+      "Hier entsteht die visuelle Chronik von Demon Lords Germany — Events, Teamfotos, Loadouts, Spieltage und starke Momente.",
+
+    downloadsTitle: "Downloads & Informationen",
+    downloadsText:
+      "Hier findet ihr wichtige Dokumente, Regeln und Informationen rund um Demon Lords Germany, kommende Events und die Vorbereitung auf Spieltage.",
+
+    contactTitle: "Kontakt & Community",
+    contactText:
+      "Du möchtest Kontakt aufnehmen, mehr über Demon Lords Germany erfahren oder Teil der Brotherhood werden?",
     facebook: "",
     instagram: "",
-  });
+
+    heroImage: "",
+    aboutImage: "",
+    teamImage: "",
+    eventImage: "",
+    galleryImage: "",
+    contactImage: "",
+  };
+
+  const [cms, setCms] = useState(defaultCms);
+
+  const adminTabs = [
+    { id: "start", label: "Startseite" },
+    { id: "about", label: "Über uns" },
+    { id: "team", label: "Team" },
+    { id: "events", label: "Events" },
+    { id: "gallery", label: "Galerie" },
+    { id: "downloads", label: "Downloads" },
+    { id: "contact", label: "Kontakt" },
+    { id: "images", label: "Bilder" },
+  ];
 
   useEffect(() => {
     const cmsRef = doc(db, "cms", "content");
     const unsubscribe = onSnapshot(cmsRef, async (snapshot) => {
       if (!snapshot.exists()) {
-        await setDoc(cmsRef, cms);
+        await setDoc(cmsRef, defaultCms);
         return;
       }
-      setCms({ ...cms, ...snapshot.data() });
+      setCms({ ...defaultCms, ...snapshot.data() });
     });
     return () => unsubscribe();
   }, []);
@@ -932,13 +983,32 @@ function AdminCMS() {
     setCms({ ...cms, [key]: value });
   }
 
+  async function uploadImage(key, file) {
+    if (!file) return;
+    try {
+      setUploading(key);
+      const filePath = `cms/${key}-${Date.now()}-${file.name}`;
+      const imageRef = ref(storage, filePath);
+      await uploadBytes(imageRef, file);
+      const url = await getDownloadURL(imageRef);
+      setCms((current) => ({ ...current, [key]: url }));
+      await setDoc(doc(db, "cms", "content"), { ...cms, [key]: url });
+      setMessage("Bild wurde hochgeladen.");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (uploadError) {
+      setMessage("Bild konnte nicht hochgeladen werden. Prüfe Firebase Storage.");
+    } finally {
+      setUploading("");
+    }
+  }
+
   if (!loggedIn) {
     return (
       <div className="adminPage">
         <section className="panel adminLoginPanel">
           <img src="/logo.png" alt="Demon Lords Germany Logo" />
           <h3>Admin Sandbox</h3>
-          <p>Hier kannst du später die Webseite direkt im Browser bearbeiten.</p>
+          <p>Bearbeite Texte, Links und Bilder deiner kompletten Webseite direkt im Browser.</p>
           <form onSubmit={login}>
             <label>
               Admin Passwort
@@ -963,55 +1033,141 @@ function AdminCMS() {
         <p className="eyebrow">Demon Lords CMS</p>
         <h3>Admin Sandbox</h3>
         <p>
-          Erste CMS-Version: Texte und Social Links werden in Firebase gespeichert. Als nächstes
-          verbinden wir diese Inhalte direkt mit den sichtbaren Seitenbereichen.
+          Bearbeite alle Hauptbereiche deiner Webseite zentral. Texte, Links und Bilder werden in Firebase gespeichert.
         </p>
       </section>
 
+      <section className="adminTabs fullWidth">
+        {adminTabs.map((tab) => (
+          <button
+            type="button"
+            key={tab.id}
+            className={activeAdminTab === tab.id ? "active" : ""}
+            onClick={() => setActiveAdminTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </section>
+
       <form className="adminEditor fullWidth" onSubmit={saveCms}>
-        <section className="panel adminEditCard">
-          <h4>Startseite bearbeiten</h4>
-          <label>
-            Startseiten Überschrift
-            <input value={cms.startTitle} onChange={(e) => updateCms("startTitle", e.target.value)} />
-          </label>
-          <label>
-            Startseiten Text
-            <textarea value={cms.startText} onChange={(e) => updateCms("startText", e.target.value)} />
-          </label>
-        </section>
+        {activeAdminTab === "start" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Startseite bearbeiten</h4>
+            <AdminTextInput label="Überschrift" value={cms.startTitle} onChange={(value) => updateCms("startTitle", value)} />
+            <AdminTextArea label="Text" value={cms.startText} onChange={(value) => updateCms("startText", value)} />
+            <AdminTextInput label="Button 1" value={cms.startButtonPrimary} onChange={(value) => updateCms("startButtonPrimary", value)} />
+            <AdminTextInput label="Button 2" value={cms.startButtonSecondary} onChange={(value) => updateCms("startButtonSecondary", value)} />
+          </section>
+        )}
 
-        <section className="panel adminEditCard">
-          <h4>Über uns bearbeiten</h4>
-          <label>
-            Über uns Überschrift
-            <input value={cms.aboutTitle} onChange={(e) => updateCms("aboutTitle", e.target.value)} />
-          </label>
-          <label>
-            Über uns Text
-            <textarea value={cms.aboutText} onChange={(e) => updateCms("aboutText", e.target.value)} />
-          </label>
-        </section>
+        {activeAdminTab === "about" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Über uns bearbeiten</h4>
+            <AdminTextInput label="Überschrift" value={cms.aboutTitle} onChange={(value) => updateCms("aboutTitle", value)} />
+            <AdminTextArea label="Beschreibung" value={cms.aboutText} onChange={(value) => updateCms("aboutText", value)} />
+            <AdminTextArea label="Mission" value={cms.aboutMission} onChange={(value) => updateCms("aboutMission", value)} />
+          </section>
+        )}
 
-        <section className="panel adminEditCard">
-          <h4>Social Media</h4>
-          <label>
-            Facebook Link
-            <input placeholder="https://facebook.com/..." value={cms.facebook} onChange={(e) => updateCms("facebook", e.target.value)} />
-          </label>
-          <label>
-            Instagram Link
-            <input placeholder="https://instagram.com/..." value={cms.instagram} onChange={(e) => updateCms("instagram", e.target.value)} />
-          </label>
-        </section>
+        {activeAdminTab === "team" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Team bearbeiten</h4>
+            <AdminTextInput label="Team Überschrift" value={cms.teamTitle} onChange={(value) => updateCms("teamTitle", value)} />
+            <AdminTextArea label="Team Beschreibung" value={cms.teamText} onChange={(value) => updateCms("teamText", value)} />
+            <p className="adminHint">Als nächstes bauen wir hier Mitgliederverwaltung mit Rollen, Namen und Bildern ein.</p>
+          </section>
+        )}
 
-        <section className="panel adminEditCard adminActions">
+        {activeAdminTab === "events" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Events bearbeiten</h4>
+            <AdminTextInput label="Event Überschrift" value={cms.eventsTitle} onChange={(value) => updateCms("eventsTitle", value)} />
+            <AdminTextArea label="Event Beschreibung" value={cms.eventsText} onChange={(value) => updateCms("eventsText", value)} />
+            <AdminTextInput label="Nächstes Event Titel" value={cms.nextEventTitle} onChange={(value) => updateCms("nextEventTitle", value)} />
+            <AdminTextArea label="Nächstes Event Text" value={cms.nextEventText} onChange={(value) => updateCms("nextEventText", value)} />
+            <p className="adminHint">Als nächstes bauen wir hier echte Eventkarten mit Datum, Ort und Status ein.</p>
+          </section>
+        )}
+
+        {activeAdminTab === "gallery" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Galerie bearbeiten</h4>
+            <AdminTextInput label="Galerie Überschrift" value={cms.galleryTitle} onChange={(value) => updateCms("galleryTitle", value)} />
+            <AdminTextArea label="Galerie Beschreibung" value={cms.galleryText} onChange={(value) => updateCms("galleryText", value)} />
+            <p className="adminHint">Als nächstes bauen wir hier echte Galerie-Alben und mehrere Bild-Uploads ein.</p>
+          </section>
+        )}
+
+        {activeAdminTab === "downloads" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Downloads bearbeiten</h4>
+            <AdminTextInput label="Downloads Überschrift" value={cms.downloadsTitle} onChange={(value) => updateCms("downloadsTitle", value)} />
+            <AdminTextArea label="Downloads Beschreibung" value={cms.downloadsText} onChange={(value) => updateCms("downloadsText", value)} />
+            <p className="adminHint">Als nächstes bauen wir PDF-Uploads für Vereinsregeln, Eventinfos und Packlisten ein.</p>
+          </section>
+        )}
+
+        {activeAdminTab === "contact" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Kontakt bearbeiten</h4>
+            <AdminTextInput label="Kontakt Überschrift" value={cms.contactTitle} onChange={(value) => updateCms("contactTitle", value)} />
+            <AdminTextArea label="Kontakt Beschreibung" value={cms.contactText} onChange={(value) => updateCms("contactText", value)} />
+            <AdminTextInput label="Facebook Link" value={cms.facebook} onChange={(value) => updateCms("facebook", value)} />
+            <AdminTextInput label="Instagram Link" value={cms.instagram} onChange={(value) => updateCms("instagram", value)} />
+          </section>
+        )}
+
+        {activeAdminTab === "images" && (
+          <section className="panel adminEditCard fullWidth">
+            <h4>Bilder hochladen</h4>
+            <div className="imageUploadGrid">
+              <ImageUpload label="Startseite Bild" field="heroImage" value={cms.heroImage} uploading={uploading} onUpload={uploadImage} />
+              <ImageUpload label="Über uns Bild" field="aboutImage" value={cms.aboutImage} uploading={uploading} onUpload={uploadImage} />
+              <ImageUpload label="Team Bild" field="teamImage" value={cms.teamImage} uploading={uploading} onUpload={uploadImage} />
+              <ImageUpload label="Event Bild" field="eventImage" value={cms.eventImage} uploading={uploading} onUpload={uploadImage} />
+              <ImageUpload label="Galerie Bild" field="galleryImage" value={cms.galleryImage} uploading={uploading} onUpload={uploadImage} />
+              <ImageUpload label="Kontakt Bild" field="contactImage" value={cms.contactImage} uploading={uploading} onUpload={uploadImage} />
+            </div>
+          </section>
+        )}
+
+        <section className="panel adminEditCard adminActions fullWidth">
           <h4>Speichern</h4>
-          <p>Diese Daten werden zentral in Firebase gespeichert.</p>
+          <p>Alle Änderungen werden zentral in Firebase gespeichert.</p>
           <button type="submit">{saving ? "Speichert..." : "Änderungen speichern"}</button>
           {message && <span>{message}</span>}
         </section>
       </form>
+    </div>
+  );
+}
+
+function AdminTextInput({ label, value, onChange }) {
+  return (
+    <label>
+      {label}
+      <input value={value || ""} onChange={(e) => onChange(e.target.value)} />
+    </label>
+  );
+}
+
+function AdminTextArea({ label, value, onChange }) {
+  return (
+    <label>
+      {label}
+      <textarea value={value || ""} onChange={(e) => onChange(e.target.value)} />
+    </label>
+  );
+}
+
+function ImageUpload({ label, field, value, uploading, onUpload }) {
+  return (
+    <div className="imageUploadCard">
+      <strong>{label}</strong>
+      {value ? <img src={value} alt={label} /> : <div className="imageEmpty">Kein Bild</div>}
+      <input type="file" accept="image/*" onChange={(e) => onUpload(field, e.target.files?.[0])} />
+      {uploading === field && <span>Upload läuft...</span>}
     </div>
   );
 }
@@ -1043,7 +1199,7 @@ body{font-family:'Oswald',Arial,sans-serif;color:#f2f2f2;background:#000;overflo
 .eyebrow{color:#ff2119;text-transform:uppercase;letter-spacing:.2em;font-size:13px;margin:0 0 12px}.panel h3{margin:0 0 16px;color:#ef1b16;font-size:32px;text-transform:uppercase;letter-spacing:.03em}.panel h4{margin:0 0 10px;color:#ef1b16;font-size:22px;text-transform:uppercase}.panel p{color:#ddd;font-size:18px;line-height:1.55}.panel ul{margin:0;padding-left:20px;color:#ddd;font-size:18px;line-height:1.8}.buttonRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.buttonRow button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-size:16px;text-transform:uppercase;cursor:pointer}.buttonRow button.ghost{border:1px solid #8b0000;background:#070707}.infoCard{min-height:160px}.warning{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;color:#ffb7b7!important}.galleryGrid{grid-template-columns:repeat(3,1fr)}.eventsPage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.eventsHero{min-height:310px;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(4,4,4,.98)),radial-gradient(circle at top right,rgba(255,0,0,.22),transparent 34%);display:flex;align-items:center;justify-content:center;text-align:center}.eventsHeroInner{max-width:950px}.eventsHero h3{font-size:48px}.eventsHero p{font-size:20px;line-height:1.7}.nextEvent{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(80,0,0,.35),rgba(0,0,0,.96))}.nextEventBadge{display:inline-block;border:1px solid #8b0000;background:#070707;color:#ff2119;border-radius:6px;padding:8px 12px;text-transform:uppercase;font-weight:700;letter-spacing:.1em;margin-bottom:14px}.nextEventContent{display:grid;grid-template-columns:1.2fr .6fr;gap:18px;align-items:center}.nextEventContent h4{font-size:28px}.eventCountdownPlaceholder{border:1px solid #8b0000;border-radius:8px;background:rgba(0,0,0,.55);padding:20px;text-align:center;box-shadow:0 0 18px rgba(255,0,0,.15)}.eventCountdownPlaceholder strong{display:block;color:#ff2119;font-size:28px}.eventCountdownPlaceholder span{color:#aaa}.eventsSectionTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ff2119;font-weight:700}.eventCard{min-height:300px;position:relative;overflow:hidden}.eventCard::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.12),transparent 40%);pointer-events:none}.eventTop{position:relative;display:flex;justify-content:space-between;gap:10px;margin-bottom:16px}.eventType,.eventStatus{border:1px solid #333;border-radius:6px;padding:6px 10px;text-transform:uppercase;font-size:12px;letter-spacing:.08em;background:#050505}.eventType{color:#ddd}.eventStatus{color:#ff2119;border-color:#8b0000}.eventStatus.intern{color:#aaa;border-color:#555}.eventStatus.planung{color:#ffd05c;border-color:#705200}.eventCard h4{position:relative;font-size:26px}.eventCard p{position:relative;font-size:16px;line-height:1.55}.eventDetails{position:relative;display:grid;grid-template-columns:1fr;gap:10px;margin-top:18px}.eventDetails div{border:1px solid #333;border-radius:6px;background:rgba(0,0,0,.5);padding:10px}.eventDetails strong{display:block;color:#ef1b16;text-transform:uppercase;font-size:12px;letter-spacing:.08em}.eventDetails span{color:#ddd}.eventInfoBox h4{font-size:24px}.eventFeatureGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.eventFeatureGrid div{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:14px;color:#ddd}.teamPagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.teamCommandHero{position:relative;min-height:330px;overflow:hidden;background:linear-gradient(135deg,rgba(75,0,0,.55),rgba(2,2,2,.98)),radial-gradient(circle at top right,rgba(255,0,0,.22),transparent 34%)}.teamHeroShade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.75),rgba(0,0,0,.25),rgba(0,0,0,.75)),radial-gradient(circle at center,rgba(255,255,255,.055),transparent 50%)}.teamHeroInner{position:relative;z-index:2;max-width:980px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}.teamHeroInner h3{font-size:50px;letter-spacing:.02em;text-align:center;margin-bottom:18px}.teamHeroInner p{max-width:900px;font-size:20px;line-height:1.7;text-align:center;margin:0 auto}.chainPanel{display:grid;grid-template-columns:.65fr 1.35fr;gap:20px;align-items:center;padding:20px 22px}.chainPanel h4{font-size:24px}.chainPanel p{font-size:16px;margin:0}.chainLine{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.chainStep{position:relative;border:1px solid #343434;border-radius:8px;background:linear-gradient(180deg,rgba(18,18,18,.95),rgba(3,3,3,.95));padding:12px 8px;text-align:center;overflow:hidden}.chainStep::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(255,0,0,.16),transparent 55%);pointer-events:none}.chainStep span{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#8b0000;color:#fff;font-weight:700;margin-bottom:8px}.chainStep strong{position:relative;display:block;color:#eee;text-transform:uppercase;font-size:12px;letter-spacing:.05em}.teamSectionTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ddd;font-weight:700}.teamSectionTitle span{color:#ff2119}.rankCardPro{position:relative;min-height:345px;overflow:hidden;padding:18px;background:linear-gradient(180deg,rgba(13,13,13,.98),rgba(3,3,3,.98))}.rankCardPro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.12),transparent 38%);pointer-events:none}.rankCardPro.featured{border-color:rgba(185,20,16,.8);box-shadow:inset 0 0 30px rgba(255,255,255,.03),0 0 22px rgba(185,20,16,.12)}.rankTop{position:relative;display:flex;gap:14px;align-items:center;margin-bottom:16px}.rankShort{width:58px;height:58px;border:1px solid #8b0000;border-radius:10px;background:linear-gradient(180deg,#2a0505,#060606);display:flex;align-items:center;justify-content:center;color:#ff2119;font-weight:700;font-size:18px;letter-spacing:.05em;box-shadow:0 0 14px rgba(255,0,0,.18)}.rankTitle{font-size:25px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.04em}.rankSubtitle{color:#aaa;text-transform:uppercase;font-size:12px;letter-spacing:.12em}.rankCardPro p{position:relative;color:#ddd;font-size:16px;line-height:1.55;margin:0}.rankDivider{position:relative;height:1px;background:linear-gradient(90deg,#8b0000,transparent);margin:18px 0}.memberListPro{position:relative;display:grid;grid-template-columns:1fr;gap:10px}.memberCardPro{display:flex;align-items:center;gap:12px;border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.58);padding:10px;transition:.2s}.memberCardPro:hover{border-color:#8b0000;transform:translateY(-1px)}.memberAvatarPro{width:56px;height:56px;border:1px solid #8b0000;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#050505;overflow:hidden;flex:0 0 auto}.memberAvatarPro img{width:45px;height:45px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(255,0,0,.35))}.memberInfoPro strong{display:block;color:#fff;font-size:17px}.memberInfoPro span{display:block;color:#aaa;text-transform:uppercase;font-size:12px;letter-spacing:.06em}.aboutPage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.aboutHero{position:relative;min-height:340px;overflow:hidden;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(5,5,5,.96)),radial-gradient(circle at top right,rgba(255,0,0,.2),transparent 35%)}.aboutOverlay{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.05),transparent 45%),linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.15),rgba(0,0,0,.65))}.aboutContent{position:relative;z-index:2;max-width:900px}.aboutContent h3{font-size:48px;margin-bottom:18px}.aboutContent p{max-width:850px;font-size:20px;line-height:1.7}.aboutStory{grid-column:span 2;min-height:260px}.valueCard{min-height:260px}.missionPanel{grid-column:1/-1;display:grid;grid-template-columns:1.2fr .9fr;gap:20px;align-items:stretch}.missionStats{display:grid;grid-template-columns:1fr;gap:12px}.missionStats div{border:1px solid #3a3a3a;border-radius:8px;padding:18px;background:rgba(0,0,0,.45)}.missionStats strong{display:block;color:#ef1b16;font-size:22px;text-transform:uppercase;margin-bottom:6px}.missionStats span{color:#ddd}.aboutQuote{display:flex;align-items:center;justify-content:center;min-height:140px;background:linear-gradient(135deg,rgba(90,0,0,.3),rgba(0,0,0,.9))}.aboutQuote blockquote{margin:0;color:#ddd;font-size:28px;text-align:center;font-family:'Rye',Georgia,serif;line-height:1.6;max-width:1000px}.galleryItem{min-height:180px;border:1px solid #333;border-radius:8px;background:linear-gradient(135deg,#111,#030303);display:flex;align-items:center;justify-content:center;color:#777;font-size:22px;text-transform:uppercase}.galleryPagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.galleryHeroPro{min-height:320px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(4,4,4,.98)),radial-gradient(circle at top right,rgba(255,0,0,.22),transparent 34%)}.galleryHeroInner{max-width:920px}.galleryHeroPro h3{font-size:50px}.galleryHeroPro p{font-size:20px;line-height:1.7}.galleryIntro{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ff2119;font-weight:700}.galleryCardPro{min-height:360px;border:1px solid rgba(150,150,150,.42);border-radius:8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));overflow:hidden;box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 18px rgba(0,0,0,.75);transition:.25s}.galleryCardPro:hover{transform:translateY(-3px);border-color:#8b0000;box-shadow:0 0 24px rgba(185,20,16,.18)}.galleryImagePlaceholder{position:relative;height:210px;background:radial-gradient(circle at center,rgba(255,0,0,.18),transparent 42%),linear-gradient(135deg,#151515,#030303);display:flex;align-items:center;justify-content:center;border-bottom:1px solid #222;overflow:hidden}.galleryImagePlaceholder::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04),transparent 45%,rgba(120,0,0,.18));pointer-events:none}.galleryImagePlaceholder img{width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(255,0,0,.45));opacity:.9}.galleryNumber{position:absolute;right:14px;bottom:10px;color:#ff2119;font-size:34px;font-weight:700;opacity:.75}.galleryCardContent{padding:18px}.galleryCardContent span{display:inline-block;color:#ff2119;text-transform:uppercase;letter-spacing:.14em;font-size:12px;margin-bottom:8px}.galleryCardContent h4{font-size:25px;margin-bottom:8px}.galleryCardContent p{font-size:16px;line-height:1.55;color:#ddd;margin:0}.galleryUploadHint h4{font-size:26px}.galleryUploadHint p{font-size:17px}.galleryFeatureList{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.galleryFeatureList div{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:14px;color:#ddd}.downloadsPagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.downloadsHero{min-height:300px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(4,4,4,.98)),radial-gradient(circle at top right,rgba(255,0,0,.22),transparent 34%)}.downloadsHeroInner{max-width:920px}.downloadsHero h3{font-size:48px}.downloadsHero p{font-size:20px;line-height:1.7}.downloadsTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ff2119;font-weight:700}.downloadCard{min-height:320px;border:1px solid rgba(150,150,150,.42);border-radius:8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:20px;position:relative;overflow:hidden;box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 18px rgba(0,0,0,.75);transition:.25s}.downloadCard:hover{transform:translateY(-3px);border-color:#8b0000;box-shadow:0 0 24px rgba(185,20,16,.18)}.downloadCard::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.12),transparent 40%);pointer-events:none}.downloadTop{position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.downloadIcon{width:62px;height:62px;border:1px solid #8b0000;border-radius:10px;background:linear-gradient(180deg,#2a0505,#060606);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 0 14px rgba(255,0,0,.18)}.downloadStatus{border:1px solid #333;border-radius:6px;padding:6px 10px;text-transform:uppercase;font-size:12px;letter-spacing:.08em;background:#050505;color:#ff2119}.downloadStatus.intern{color:#aaa;border-color:#555}.downloadStatus.vorbereitung{color:#ffd05c;border-color:#705200}.downloadCard h4{position:relative;font-size:28px}.downloadCard p{position:relative;font-size:16px;line-height:1.6;color:#ddd}.downloadActions{position:relative;display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.downloadActions button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:10px 16px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.downloadActions button.ghost{border:1px solid #8b0000;background:#070707}.downloadsInfoBox h4{font-size:26px}.downloadsFeatureGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.downloadsFeatureGrid div{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:14px;color:#ddd}.contactPagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.contactHero{min-height:310px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(4,4,4,.98)),radial-gradient(circle at top right,rgba(255,0,0,.22),transparent 34%)}.contactHeroInner{max-width:930px}.contactHero h3{font-size:48px}.contactHero p{font-size:20px;line-height:1.7}.joinPanel{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;background:linear-gradient(135deg,rgba(90,0,0,.3),rgba(0,0,0,.95))}.joinBadge{display:inline-block;border:1px solid #8b0000;background:#070707;color:#ff2119;border-radius:6px;padding:7px 12px;text-transform:uppercase;font-weight:700;letter-spacing:.1em;margin-bottom:12px}.joinPanel h4{font-size:30px}.joinPanel p{font-size:17px;line-height:1.6}.joinRequirements{display:grid;grid-template-columns:1fr;gap:10px}.joinRequirements div{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:14px;color:#ddd}.contactSectionTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ff2119;font-weight:700}.socialCard{min-height:300px;border:1px solid rgba(150,150,150,.42);border-radius:8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:24px;position:relative;overflow:hidden;box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 18px rgba(0,0,0,.75);transition:.25s}.socialCard:hover{transform:translateY(-3px);border-color:#8b0000;box-shadow:0 0 24px rgba(185,20,16,.18)}.socialCard::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.12),transparent 40%);pointer-events:none}.socialIcon{position:relative;width:68px;height:68px;border:1px solid #8b0000;border-radius:12px;background:linear-gradient(180deg,#2a0505,#060606);display:flex;align-items:center;justify-content:center;color:#ff2119;font-size:34px;font-weight:700;margin-bottom:18px;box-shadow:0 0 14px rgba(255,0,0,.18)}.socialCard h4{position:relative;font-size:30px}.socialCard p{position:relative;font-size:17px;line-height:1.6;color:#ddd}.socialCard button{position:relative;border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:10px 16px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer;margin-top:14px}.contactInfoCard{min-height:300px}.contactInfoCard h4{font-size:30px}.contactInfoCard p{font-size:17px}.contactLine{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:12px;margin-top:10px}.contactLine strong{display:block;color:#ef1b16;text-transform:uppercase;font-size:12px;letter-spacing:.08em}.contactLine span{color:#ddd}.contactFinal{text-align:center;background:linear-gradient(135deg,rgba(90,0,0,.3),rgba(0,0,0,.95))}.contactFinal h4{font-size:32px}.contactFinal p{font-size:18px;max-width:900px;margin:0 auto}
 .orderSystem{height:100%;display:flex;flex-direction:column;gap:12px}.orderTopBar{display:flex;justify-content:space-between;align-items:center;gap:12px}.orderTopBar button,.orderSubmit,.adminForm button,.adminActive button,.passwordGrid button,.orderLoginForm button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:10px 14px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.orderDeadline{border:1px solid #8b0000;background:rgba(0,0,0,.62);border-radius:8px;padding:12px;text-align:center;box-shadow:0 0 16px rgba(255,0,0,.18)}.orderDeadline strong{display:block;color:#ff2119;text-transform:uppercase;letter-spacing:.08em}.orderDeadline span{display:block;margin-top:5px;font-weight:700}.orderDeadline small{display:block;color:#aaa;margin-top:3px}.orderDeadline.small{padding:8px 14px}.orderDeadline.closed{border-color:#ff1c15;background:rgba(120,0,0,.18)}.orderLayout{display:grid;grid-template-columns:minmax(350px,420px) minmax(0,1fr);gap:14px;min-height:0;flex:1}.orderFormPanel,.orderOverviewPanel{min-height:0;overflow:auto}.orderFormPanel h3,.orderOverviewPanel h3{margin:0;color:#ef1b16;text-transform:uppercase}.orderFormPanel p,.orderOverviewPanel p{font-size:15px;margin:6px 0 14px;color:#ddd}.orderFormPanel form{display:flex;flex-direction:column;gap:14px}.orderTwoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.orderShirtGrid{display:grid;grid-template-columns:1fr 132px 58px;gap:10px}.orderTwoProductCols{display:grid;grid-template-columns:1fr 70px;gap:18px}.orderFormPanel label,.orderLoginForm label,.passwordPanel label{display:block;color:#f1f1f1;font-size:14px}.orderFormPanel input,.orderFormPanel select,.orderFormPanel textarea,.orderLoginForm input,.adminForm input,.passwordPanel input{width:100%;margin-top:5px;height:36px;border-radius:5px;border:1px solid #444;background:#050505;color:#fff;padding:0 10px;font-family:'Oswald',Arial,sans-serif}.orderFormPanel textarea{height:44px;padding-top:8px}.clothingProduct h4{margin:0 0 8px;font-size:18px;text-transform:uppercase}.clothingProduct small{color:#ccc;font-size:13px}.orderSizeRow{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.orderSizeRow span{min-width:28px;text-align:center;border:1px solid #333;border-radius:4px;padding:2px 5px;background:#050505;font-size:12px}.memberTotalBox{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px}.memberTotalBox strong{color:#ff2119;font-size:22px}.closedNotice{border:1px solid #8b0000;background:rgba(120,0,0,.22);color:#ffb7b7;border-radius:5px;padding:12px;text-align:center;font-weight:700;text-transform:uppercase}.orderOverviewPanel{display:flex;flex-direction:column}.orderOverviewHead{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #242424;padding-bottom:12px}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm span,.orderError{color:#ff1c15;font-size:13px}.adminActive{display:flex;gap:8px}.passwordPanel{border-bottom:1px solid #242424;padding:12px 0}.passwordGrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.passwordPanel p{color:#55ff7a}.orderTableWrap{overflow:auto;flex:1;min-height:200px}.orderTableWrap table{width:100%;border-collapse:collapse;font-size:13px}.orderTableWrap th,.orderTableWrap td{padding:8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}.orderTableWrap th[colspan]{text-align:center}.price{color:#ff1610;font-weight:700}.noteCell{max-width:220px;white-space:normal;color:#ddd}.memberStatus{color:#55ff7a;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:24px}.orderBottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:12px;padding-top:12px}.orderCard{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:16px}.orderCard h3{margin:0 0 12px;color:#f01b15;text-align:center}.orderSummary{display:grid;grid-template-columns:34px 1fr 70px 100px;gap:6px;align-items:center;margin-bottom:6px}.orderSummary em,.orderPrice em{font-style:normal}.orderTotal{display:flex;justify-content:space-between;border-top:1px solid #555;padding-top:10px;margin-top:10px;color:#f01b15;font-size:22px}.orderPrice{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #333}.orderLoginPanel{max-width:560px;margin:20px auto;border:1px solid #8b0000;border-radius:10px;background:radial-gradient(circle at top,#232323,#050505 65%,#000);padding:28px;text-align:center;box-shadow:0 0 42px rgba(160,0,0,.48)}.orderLoginPanel img{width:150px}.orderLoginPanel h3{color:#ef1b16;text-transform:uppercase}.orderLoginForm{display:flex;flex-direction:column;gap:14px;text-align:left}
 
-.adminPage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.adminLoginPanel{grid-column:1/-1;max-width:560px;margin:30px auto;text-align:center}.adminLoginPanel img{width:150px;filter:drop-shadow(0 0 12px rgba(255,0,0,.4));margin-bottom:10px}.adminLoginPanel h3,.adminHero h3{color:#ef1b16;text-transform:uppercase}.adminLoginPanel form{display:flex;flex-direction:column;gap:14px;text-align:left;margin-top:18px}.adminLoginPanel input,.adminEditCard input,.adminEditCard textarea{width:100%;margin-top:6px;border:1px solid #444;background:#050505;color:#fff;border-radius:5px;padding:10px;font-family:'Oswald',Arial,sans-serif}.adminEditCard textarea{min-height:110px;resize:vertical}.adminLoginPanel button,.adminActions button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 16px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.adminError{color:#ff1c15;text-align:center}.adminHero{grid-column:1/-1;background:linear-gradient(135deg,rgba(70,0,0,.45),rgba(5,5,5,.98))}.adminHero p{font-size:18px;max-width:900px}.adminEditor{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.adminEditCard h4{font-size:24px}.adminEditCard label{display:block;margin-top:12px;color:#ddd}.adminActions span{display:block;margin-top:12px;color:#55ff7a}.adminActions p{font-size:16px}@media(max-width:900px){.adminPage,.adminEditor{grid-template-columns:1fr}}
+.adminPage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.adminLoginPanel{grid-column:1/-1;max-width:560px;margin:30px auto;text-align:center}.adminLoginPanel img{width:150px;filter:drop-shadow(0 0 12px rgba(255,0,0,.4));margin-bottom:10px}.adminLoginPanel h3,.adminHero h3{color:#ef1b16;text-transform:uppercase}.adminLoginPanel form{display:flex;flex-direction:column;gap:14px;text-align:left;margin-top:18px}.adminLoginPanel input,.adminEditCard input,.adminEditCard textarea{width:100%;margin-top:6px;border:1px solid #444;background:#050505;color:#fff;border-radius:5px;padding:10px;font-family:'Oswald',Arial,sans-serif}.adminEditCard textarea{min-height:110px;resize:vertical}.adminLoginPanel button,.adminActions button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 16px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.adminError{color:#ff1c15;text-align:center}.adminHero{grid-column:1/-1;background:linear-gradient(135deg,rgba(70,0,0,.45),rgba(5,5,5,.98))}.adminHero p{font-size:18px;max-width:900px}.adminTabs{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}.adminTabs button{border:1px solid #333;background:#090909;color:#ddd;border-radius:6px;padding:9px 14px;font-family:'Oswald',Arial,sans-serif;text-transform:uppercase;cursor:pointer}.adminTabs button.active{border-color:#b91410;color:#fff;background:linear-gradient(180deg,#1a0505,#080808);box-shadow:0 0 12px rgba(255,0,0,.22)}.adminEditor{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.adminEditor .fullWidth{grid-column:1/-1}.adminHint{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:10px;color:#ffb7b7!important}.imageUploadGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.imageUploadCard{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:12px}.imageUploadCard strong{display:block;color:#ff2119;text-transform:uppercase;margin-bottom:8px}.imageUploadCard img,.imageEmpty{width:100%;height:150px;border:1px solid #333;border-radius:6px;object-fit:cover;background:#050505;display:flex;align-items:center;justify-content:center;color:#777;margin-bottom:10px}.imageUploadCard input{padding:8px;height:auto}.imageUploadCard span{display:block;color:#55ff7a;margin-top:6px}.adminEditCard h4{font-size:24px}.adminEditCard label{display:block;margin-top:12px;color:#ddd}.adminActions span{display:block;margin-top:12px;color:#55ff7a}.adminActions p{font-size:16px}@media(max-width:900px){.adminPage,.adminEditor{grid-template-columns:1fr}.imageUploadGrid{grid-template-columns:1fr}.adminTabs{flex-direction:column}.adminTabs button{width:100%;text-align:left}}
 
 footer{border-top:1px solid #240000;background:#050505;color:#d0d0d0;text-align:center;padding:12px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;flex:0 0 auto}
 
