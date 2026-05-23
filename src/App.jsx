@@ -1,4 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 export default function App() {
   const [activePage, setActivePage] = useState("start");
@@ -184,29 +194,173 @@ function GalleryPage() {
 }
 
 function ClothingPage() {
+  return <OrderSystem />;
+}
+
+function OrderSystem() {
+  const sizes = ["S", "M", "L", "XL", "XXL", "3XL", "4XL"];
+  const prices = { tshirt: 20, polo: 30, hoodie: 40 };
+  const DEFAULT_ADMIN_PASSWORD = "DemonLords2026";
+  const DEFAULT_MEMBER_PASSWORD = "DL2026";
+  const DEFAULT_DEADLINE = "2026-12-31T23:59";
+
+  const [settings, setSettings] = useState({ adminPassword: DEFAULT_ADMIN_PASSWORD, memberPassword: DEFAULT_MEMBER_PASSWORD, deadline: DEFAULT_DEADLINE });
+  const [orders, setOrders] = useState([]);
+  const [isMemberLoggedIn, setIsMemberLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [adminPasswordInput, setAdminPasswordInput] = useState("");
+  const [adminError, setAdminError] = useState("");
+  const [newMemberPassword, setNewMemberPassword] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [deadlineInput, setDeadlineInput] = useState(DEFAULT_DEADLINE);
+  const [settingsMessage, setSettingsMessage] = useState("");
+  const [now, setNow] = useState(Date.now());
+  const [form, setForm] = useState({ name: "", nick: "", tshirtSize: "S", tshirtColor: "Olive", tshirtQty: 0, poloSize: "S", poloQty: 0, hoodieSize: "S", hoodieQty: 0, note: "" });
+
+  useEffect(() => {
+    const settingsRef = doc(db, "settings", "main");
+    const unsubscribe = onSnapshot(settingsRef, async (snapshot) => {
+      if (!snapshot.exists()) {
+        await setDoc(settingsRef, { adminPassword: DEFAULT_ADMIN_PASSWORD, memberPassword: DEFAULT_MEMBER_PASSWORD, deadline: DEFAULT_DEADLINE });
+        return;
+      }
+      const data = snapshot.data();
+      const next = { adminPassword: data.adminPassword || DEFAULT_ADMIN_PASSWORD, memberPassword: data.memberPassword || DEFAULT_MEMBER_PASSWORD, deadline: data.deadline || DEFAULT_DEADLINE };
+      setSettings(next);
+      setDeadlineInput(next.deadline);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "orders"), (snapshot) => {
+      const list = snapshot.docs.map((document) => ({ id: document.id, ...document.data() }));
+      list.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+      setOrders(list);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const calc = (order) => Number(order.tshirtQty || 0) * prices.tshirt + Number(order.poloQty || 0) * prices.polo + Number(order.hoodieQty || 0) * prices.hoodie;
+  const euro = (value) => `${Number(value).toFixed(2).replace(".", ",")} €`;
+  const setFormValue = (key, value) => setForm({ ...form, [key]: value });
+  const totalTshirts = orders.reduce((sum, order) => sum + Number(order.tshirtQty || 0), 0);
+  const totalPolos = orders.reduce((sum, order) => sum + Number(order.poloQty || 0), 0);
+  const totalHoodies = orders.reduce((sum, order) => sum + Number(order.hoodieQty || 0), 0);
+  const total = orders.reduce((sum, order) => sum + calc(order), 0);
+  const currentOrderTotal = calc(form);
+  const deadlineTime = new Date(settings.deadline).getTime();
+  const timeLeft = Math.max(0, deadlineTime - now);
+  const orderClosed = timeLeft <= 0;
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+  const seconds = Math.floor((timeLeft / 1000) % 60);
+  const deadlineDisplay = new Date(settings.deadline).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+  function login(e) {
+    e.preventDefault();
+    if (loginPassword === settings.adminPassword) {
+      setIsMemberLoggedIn(true); setIsAdmin(true); setLoginPassword(""); setLoginError(""); return;
+    }
+    if (loginPassword === settings.memberPassword) {
+      if (orderClosed) { setLoginError("Die Bestellfrist ist abgelaufen. Mitglieder-Login ist gesperrt."); return; }
+      setIsMemberLoggedIn(true); setIsAdmin(false); setLoginPassword(""); setLoginError(""); return;
+    }
+    setLoginError("Falsches Passwort");
+  }
+
+  function logout() { setIsMemberLoggedIn(false); setIsAdmin(false); setLoginPassword(""); setAdminPasswordInput(""); setLoginError(""); setAdminError(""); }
+
+  function adminLogin(e) {
+    e.preventDefault();
+    if (adminPasswordInput === settings.adminPassword) { setIsAdmin(true); setAdminPasswordInput(""); setAdminError(""); } else { setAdminError("Falsches Admin-Passwort"); }
+  }
+
+  async function saveSettings(e) {
+    e.preventDefault();
+    const nextSettings = { adminPassword: newAdminPassword.trim().length >= 6 ? newAdminPassword.trim() : settings.adminPassword, memberPassword: newMemberPassword.trim().length >= 4 ? newMemberPassword.trim() : settings.memberPassword, deadline: deadlineInput || settings.deadline };
+    await setDoc(doc(db, "settings", "main"), nextSettings);
+    setNewMemberPassword(""); setNewAdminPassword(""); setSettingsMessage("Einstellungen wurden live gespeichert."); setTimeout(() => setSettingsMessage(""), 3000);
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!isMemberLoggedIn || (orderClosed && !isAdmin) || !form.name.trim()) return;
+    await addDoc(collection(db, "orders"), { ...form, poloSize: form.poloQty > 0 ? form.poloSize : "-", hoodieSize: form.hoodieQty > 0 ? form.hoodieSize : "-", createdAt: serverTimestamp(), createdAtText: new Date().toLocaleString("de-DE") });
+    setForm({ name: "", nick: "", tshirtSize: "S", tshirtColor: "Olive", tshirtQty: 0, poloSize: "S", poloQty: 0, hoodieSize: "S", hoodieQty: 0, note: "" });
+  }
+
+  async function deleteOrder(orderId) { if (!isAdmin) return; await deleteDoc(doc(db, "orders", orderId)); }
+
+  function exportCSV() {
+    if (!isAdmin) return;
+    const header = ["Name", "Spitzname", "T-Shirt Größe", "T-Shirt Farbe", "T-Shirt Anzahl", "Polo Größe", "Polo Anzahl", "Hoodie Größe", "Hoodie Anzahl", "Hinweise", "Gesamtpreis", "Datum"];
+    const rows = orders.map((order) => [order.name, order.nick, order.tshirtSize, order.tshirtColor, order.tshirtQty, order.poloSize, order.poloQty, order.hoodieSize, order.hoodieQty, order.note || "", euro(calc(order)), order.createdAtText || ""]);
+    const csv = [header, ...rows].map((row) => row.map((cell) => String(cell).replace(/;/g, ",")).join(";")).join(String.fromCharCode(10));
+    const blob = new Blob([String.fromCharCode(65279) + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = "demon-lords-bestellung.csv"; link.click(); URL.revokeObjectURL(url);
+  }
+
+  if (!isMemberLoggedIn) {
+    return (
+      <div className="orderLoginPanel">
+        <img src="/logo.png" alt="Demon Lords Germany Logo" />
+        <h3>Vereinskleidung Login</h3>
+        <div className={orderClosed ? "orderDeadline closed" : "orderDeadline"}>
+          {orderClosed ? <><strong>Bestellung geschlossen</strong><span>Bestellschluss war am {deadlineDisplay}</span></> : <><strong>Bestellschluss in</strong><span>{days} Tage · {hours} Std. · {minutes} Min. · {seconds} Sek.</span><small>bis {deadlineDisplay}</small></>}
+        </div>
+        <form onSubmit={login} className="orderLoginForm">
+          <label>Passwort<input type="password" placeholder="Mitglieder- oder Admin-Passwort" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} /></label>
+          {loginError && <p className="orderError">{loginError}</p>}
+          <button type="submit">Einloggen</button>
+        </form>
+      </div>
+    );
+  }
+
   return (
-    <div className="pageGrid twoColumns">
-      <section className="panel largePanel">
-        <h3>Vereinskleidung</h3>
-        <p>
-          Hier wird als nächstes dein fertiges Bestellsystem integriert: Mitglieder-Login,
-          Admin-Bereich, Live-Datenbank, Timer und Excel-Export.
-        </p>
-        <p className="warning">
-          Nächster Schritt: Wir fügen dein bestehendes Firebase-Bestellsystem genau hier ein.
-        </p>
-      </section>
-      <section className="panel listPanel">
-        <h4>Artikel</h4>
-        <ul>
-          <li>T-Shirt — 20 €</li>
-          <li>Polo-Shirt — 30 €</li>
-          <li>Hoodie — 40 €</li>
-        </ul>
-      </section>
+    <div className="orderSystem">
+      <div className="orderTopBar"><div className={orderClosed ? "orderDeadline small closed" : "orderDeadline small"}>{orderClosed ? <span>Bestellung geschlossen</span> : <span>{days}T · {hours}H · {minutes}M · {seconds}S</span>}</div><button onClick={logout}>Logout</button></div>
+      <div className="orderLayout">
+        <section className="panel orderFormPanel">
+          <h3>▣ Eintragungsformular</h3><p>Bitte trage hier deine Bestellung ein.</p>
+          <form onSubmit={submit}>
+            <div className="orderTwoCols"><label>Name <span>*</span><input required placeholder="Dein Name" value={form.name} onChange={(e) => setFormValue("name", e.target.value)} /></label><label>Spitzname<input placeholder="Dein Spitzname" value={form.nick} onChange={(e) => setFormValue("nick", e.target.value)} /></label></div>
+            <ClothingProduct title="👕 T-Shirt – 20€"><div className="orderShirtGrid"><OrderSelect label="Größe" value={form.tshirtSize} onChange={(v) => setFormValue("tshirtSize", v)} options={sizes} /><OrderSelect label="Farbe" value={form.tshirtColor} onChange={(v) => setFormValue("tshirtColor", v)} options={["Olive", "Schwarz"]} /><OrderNumber label="Anzahl" value={form.tshirtQty} onChange={(v) => setFormValue("tshirtQty", v)} /></div><OrderSizeRow sizes={sizes} /></ClothingProduct>
+            <ClothingProduct title="👕 Polo-Shirt – 30€" note="(Nur in Schwarz)"><div className="orderTwoProductCols"><OrderSelect label="Größe" value={form.poloSize} onChange={(v) => setFormValue("poloSize", v)} options={sizes} /><OrderNumber label="Anzahl" value={form.poloQty} onChange={(v) => setFormValue("poloQty", v)} /></div><OrderSizeRow sizes={sizes} /></ClothingProduct>
+            <ClothingProduct title="🧥 Hoodie – 40€"><div className="orderTwoProductCols"><OrderSelect label="Größe" value={form.hoodieSize} onChange={(v) => setFormValue("hoodieSize", v)} options={sizes} /><OrderNumber label="Anzahl" value={form.hoodieQty} onChange={(v) => setFormValue("hoodieQty", v)} /></div><OrderSizeRow sizes={sizes} /></ClothingProduct>
+            <label>Hinweise optional<textarea placeholder="Hier kannst du optional etwas angeben..." value={form.note} onChange={(e) => setFormValue("note", e.target.value)} /></label>
+            <div className="memberTotalBox"><span>Deine aktuelle Bestellsumme:</span><strong>{euro(currentOrderTotal)}</strong></div>
+            {orderClosed && !isAdmin ? <div className="closedNotice">Bestellfrist abgelaufen — neue Bestellungen sind gesperrt.</div> : <button className="orderSubmit" type="submit">➤ Bestellung absenden</button>}
+          </form>
+        </section>
+        <section className={`panel orderOverviewPanel ${isAdmin ? "adminView" : ""}`}>
+          <div className="orderOverviewHead"><div><h3>▣ Bestellübersicht</h3><p>{isAdmin ? "Admin-Ansicht: vollständige Live-Bestellliste mit Preisen." : "Mitglieder-Ansicht: sichtbar ist nur, wer sich bereits eingetragen hat."}</p></div>{!isAdmin ? <form className="adminForm" onSubmit={adminLogin}><input type="password" placeholder="Admin Passwort" value={adminPasswordInput} onChange={(e) => setAdminPasswordInput(e.target.value)} /><button type="submit">Admin Login</button>{adminError && <span>{adminError}</span>}</form> : <div className="adminActive"><button onClick={exportCSV}>▦ Excel Export</button><button onClick={() => setIsAdmin(false)}>Admin Logout</button></div>}</div>
+          {isAdmin && <form className="passwordPanel" onSubmit={saveSettings}><h3>Admin Einstellungen</h3><div className="passwordGrid"><label>Neues Mitglieder-Passwort<input type="text" placeholder="mind. 4 Zeichen" value={newMemberPassword} onChange={(e) => setNewMemberPassword(e.target.value)} /></label><label>Neues Admin-Passwort<input type="text" placeholder="mind. 6 Zeichen" value={newAdminPassword} onChange={(e) => setNewAdminPassword(e.target.value)} /></label><label>Bestellschluss<input type="datetime-local" value={deadlineInput} onChange={(e) => setDeadlineInput(e.target.value)} /></label><button type="submit">Speichern</button></div>{settingsMessage && <p>{settingsMessage}</p>}</form>}
+          <div className="orderTableWrap"><table>{isAdmin ? <thead><tr><th rowSpan="2">Name</th><th rowSpan="2">Spitzname</th><th colSpan="4">T-Shirt</th><th colSpan="3">Polo-Shirt</th><th colSpan="3">Hoodie</th><th rowSpan="2">Hinweise</th><th rowSpan="2">Gesamt</th><th rowSpan="2">Datum</th><th rowSpan="2"></th></tr><tr><th>Gr.</th><th>Farbe</th><th>Anz.</th><th>Preis</th><th>Gr.</th><th>Anz.</th><th>Preis</th><th>Gr.</th><th>Anz.</th><th>Preis</th></tr></thead> : <thead><tr><th>Name</th><th>Spitzname</th><th>Status</th></tr></thead>}<tbody>{orders.length === 0 && <tr><td colSpan={isAdmin ? 16 : 3} className="empty">Noch keine Bestellungen eingetragen.</td></tr>}{orders.map((order) => <tr key={order.id}>{isAdmin ? <><td>{order.name}</td><td>{order.nick || "-"}</td><td>{order.tshirtSize}</td><td>{order.tshirtColor}</td><td>{order.tshirtQty}</td><td>{euro(order.tshirtQty * prices.tshirt)}</td><td>{order.poloQty > 0 ? order.poloSize : "-"}</td><td>{order.poloQty}</td><td>{euro(order.poloQty * prices.polo)}</td><td>{order.hoodieQty > 0 ? order.hoodieSize : "-"}</td><td>{order.hoodieQty}</td><td>{euro(order.hoodieQty * prices.hoodie)}</td><td className="noteCell">{order.note || "-"}</td><td className="price">{euro(calc(order))}</td><td>{order.createdAtText || "-"}</td><td><button className="delete" onClick={() => deleteOrder(order.id)}>🗑</button></td></> : <><td>{order.name}</td><td>{order.nick || "-"}</td><td className="memberStatus">Eingetragen</td></>}</tr>)}</tbody></table></div>
+          {isAdmin && <div className="orderBottomCards"><div className="orderCard"><h3>▟ Gesamtübersicht</h3><OrderSummary icon="👕" label="T-Shirts:" qty={totalTshirts} value={euro(totalTshirts * prices.tshirt)} /><OrderSummary icon="👕" label="Polo-Shirts:" qty={totalPolos} value={euro(totalPolos * prices.polo)} /><OrderSummary icon="🧥" label="Hoodies:" qty={totalHoodies} value={euro(totalHoodies * prices.hoodie)} /><div className="orderTotal"><strong>Gesamt:</strong><strong>{euro(total)}</strong></div></div><div className="orderCard"><h3>Preisliste</h3><OrderPrice icon="👕" label="T-Shirt" value={euro(prices.tshirt)} /><OrderPrice icon="👕" label="Polo-Shirt" value={euro(prices.polo)} /><OrderPrice icon="🧥" label="Hoodie" value={euro(prices.hoodie)} /></div></div>}
+        </section>
+      </div>
     </div>
   );
 }
+
+function ClothingProduct({ title, note, children }) { return <div className="clothingProduct"><h4>{title} {note && <small>{note}</small>}</h4>{children}</div>; }
+function OrderSelect({ label, value, onChange, options }) { return <label>{label}<select value={value} onChange={(e) => onChange(e.target.value)}>{options.map((option) => <option key={option}>{option}</option>)}</select></label>; }
+function OrderNumber({ label, value, onChange }) { return <label>{label}<input type="number" min="0" value={value} onChange={(e) => onChange(Number(e.target.value))} /></label>; }
+function OrderSizeRow({ sizes }) { return <div className="orderSizeRow">{sizes.map((size) => <span key={size}>{size}</span>)}</div>; }
+function OrderSummary({ icon, label, qty, value }) { return <div className="orderSummary"><span>{icon}</span><b>{label}</b><em>{qty} Stk.</em><em>{value}</em></div>; }
+function OrderPrice({ icon, label, value }) { return <div className="orderPrice"><span>{icon}</span><b>{label}</b><em>{value}</em></div>; }
 
 function DownloadsPage() {
   return (
@@ -272,6 +426,8 @@ body{font-family:'Oswald',Arial,sans-serif;color:#f2f2f2;background:#000;overflo
 .content{flex:1;min-height:0;overflow:auto;padding:16px;background:radial-gradient(circle at top,#120000,#000 45%)}
 .pageGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.twoColumns{grid-template-columns:1.4fr .8fr}.fullWidth{grid-column:1/-1}.panel{border:1px solid rgba(150,150,150,.42);border-radius:8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 18px rgba(0,0,0,.75);padding:22px}.largePanel{min-height:240px}.heroPanel{background:linear-gradient(135deg,rgba(70,0,0,.45),rgba(5,5,5,.98)),radial-gradient(circle at top right,rgba(255,0,0,.16),transparent 35%)}
 .eyebrow{color:#ff2119;text-transform:uppercase;letter-spacing:.2em;font-size:13px;margin:0 0 12px}.panel h3{margin:0 0 16px;color:#ef1b16;font-size:32px;text-transform:uppercase;letter-spacing:.03em}.panel h4{margin:0 0 10px;color:#ef1b16;font-size:22px;text-transform:uppercase}.panel p{color:#ddd;font-size:18px;line-height:1.55}.panel ul{margin:0;padding-left:20px;color:#ddd;font-size:18px;line-height:1.8}.buttonRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.buttonRow button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-size:16px;text-transform:uppercase;cursor:pointer}.buttonRow button.ghost{border:1px solid #8b0000;background:#070707}.infoCard{min-height:160px}.warning{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;color:#ffb7b7!important}.galleryGrid{grid-template-columns:repeat(3,1fr)}.galleryItem{min-height:180px;border:1px solid #333;border-radius:8px;background:linear-gradient(135deg,#111,#030303);display:flex;align-items:center;justify-content:center;color:#777;font-size:22px;text-transform:uppercase}
+.orderSystem{height:100%;display:flex;flex-direction:column;gap:12px}.orderTopBar{display:flex;justify-content:space-between;align-items:center;gap:12px}.orderTopBar button,.orderSubmit,.adminForm button,.adminActive button,.passwordGrid button,.orderLoginForm button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:10px 14px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.orderDeadline{border:1px solid #8b0000;background:rgba(0,0,0,.62);border-radius:8px;padding:12px;text-align:center;box-shadow:0 0 16px rgba(255,0,0,.18)}.orderDeadline strong{display:block;color:#ff2119;text-transform:uppercase;letter-spacing:.08em}.orderDeadline span{display:block;margin-top:5px;font-weight:700}.orderDeadline small{display:block;color:#aaa;margin-top:3px}.orderDeadline.small{padding:8px 14px}.orderDeadline.closed{border-color:#ff1c15;background:rgba(120,0,0,.18)}.orderLayout{display:grid;grid-template-columns:minmax(350px,420px) minmax(0,1fr);gap:14px;min-height:0;flex:1}.orderFormPanel,.orderOverviewPanel{min-height:0;overflow:auto}.orderFormPanel h3,.orderOverviewPanel h3{margin:0;color:#ef1b16;text-transform:uppercase}.orderFormPanel p,.orderOverviewPanel p{font-size:15px;margin:6px 0 14px;color:#ddd}.orderFormPanel form{display:flex;flex-direction:column;gap:14px}.orderTwoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.orderShirtGrid{display:grid;grid-template-columns:1fr 132px 58px;gap:10px}.orderTwoProductCols{display:grid;grid-template-columns:1fr 70px;gap:18px}.orderFormPanel label,.orderLoginForm label,.passwordPanel label{display:block;color:#f1f1f1;font-size:14px}.orderFormPanel input,.orderFormPanel select,.orderFormPanel textarea,.orderLoginForm input,.adminForm input,.passwordPanel input{width:100%;margin-top:5px;height:36px;border-radius:5px;border:1px solid #444;background:#050505;color:#fff;padding:0 10px;font-family:'Oswald',Arial,sans-serif}.orderFormPanel textarea{height:44px;padding-top:8px}.clothingProduct h4{margin:0 0 8px;font-size:18px;text-transform:uppercase}.clothingProduct small{color:#ccc;font-size:13px}.orderSizeRow{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.orderSizeRow span{min-width:28px;text-align:center;border:1px solid #333;border-radius:4px;padding:2px 5px;background:#050505;font-size:12px}.memberTotalBox{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px}.memberTotalBox strong{color:#ff2119;font-size:22px}.closedNotice{border:1px solid #8b0000;background:rgba(120,0,0,.22);color:#ffb7b7;border-radius:5px;padding:12px;text-align:center;font-weight:700;text-transform:uppercase}.orderOverviewPanel{display:flex;flex-direction:column}.orderOverviewHead{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #242424;padding-bottom:12px}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm span,.orderError{color:#ff1c15;font-size:13px}.adminActive{display:flex;gap:8px}.passwordPanel{border-bottom:1px solid #242424;padding:12px 0}.passwordGrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.passwordPanel p{color:#55ff7a}.orderTableWrap{overflow:auto;flex:1;min-height:200px}.orderTableWrap table{width:100%;border-collapse:collapse;font-size:13px}.orderTableWrap th,.orderTableWrap td{padding:8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}.orderTableWrap th[colspan]{text-align:center}.price{color:#ff1610;font-weight:700}.noteCell{max-width:220px;white-space:normal;color:#ddd}.memberStatus{color:#55ff7a;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:24px}.orderBottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:12px;padding-top:12px}.orderCard{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:16px}.orderCard h3{margin:0 0 12px;color:#f01b15;text-align:center}.orderSummary{display:grid;grid-template-columns:34px 1fr 70px 100px;gap:6px;align-items:center;margin-bottom:6px}.orderSummary em,.orderPrice em{font-style:normal}.orderTotal{display:flex;justify-content:space-between;border-top:1px solid #555;padding-top:10px;margin-top:10px;color:#f01b15;font-size:22px}.orderPrice{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #333}.orderLoginPanel{max-width:560px;margin:20px auto;border:1px solid #8b0000;border-radius:10px;background:radial-gradient(circle at top,#232323,#050505 65%,#000);padding:28px;text-align:center;box-shadow:0 0 42px rgba(160,0,0,.48)}.orderLoginPanel img{width:150px}.orderLoginPanel h3{color:#ef1b16;text-transform:uppercase}.orderLoginForm{display:flex;flex-direction:column;gap:14px;text-align:left}
+
 footer{border-top:1px solid #240000;background:#050505;color:#d0d0d0;text-align:center;padding:12px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;flex:0 0 auto}
 
 @media(max-width:1000px){.site{overflow:auto}.hero{height:auto;min-height:210px}.logo{width:125px}.headline{padding-left:140px;padding-right:140px}.headline h1{font-size:48px}.headline h2{font-size:30px}.headline p{font-size:14px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr 1fr}.largePanel{grid-column:1/-1}.nav{justify-content:flex-start}}
