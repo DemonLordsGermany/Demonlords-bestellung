@@ -87,64 +87,96 @@ function StartPage({ openPage }) {
       <section className="panel cinematicHero fullWidth">
         <div className="heroOverlay" />
         <div className="heroContent">
-          <p className="heroEyebrow">Demon Lords Germany • Magfed Brotherhood</p>
+          <p className="heroEyebrow">Demon Lords Germany • Magfed Paintball</p>
           <h1>
-            Tactical Brotherhood
-            <span>Built for Scenario & Magfed Paintball</span>
+            Brotherhood im Feld
+            <span>Tactical Teamplay. Scenario Games. Community.</span>
           </h1>
           <p className="heroText">
-            Demon Lords Germany verbindet taktisches Gameplay, Brotherhood und professionellen
-            Teamauftritt zu einer starken Community für Magfed Paintball und Scenario Games.
+            Wir sind eine deutsche Magfed-Paintball-Community mit Fokus auf Zusammenhalt,
+            taktischem Auftreten und echtem Teamspirit — auf Events, im Training und neben dem Feld.
           </p>
           <div className="heroButtons">
             <button onClick={() => openPage("clothing")}>Vereinskleidung</button>
-            <button className="ghost" onClick={() => openPage("events")}>Events</button>
-            <button className="ghost" onClick={() => openPage("team")}>Team ansehen</button>
+            <button className="ghost" onClick={() => openPage("about")}>Über uns</button>
+            <button className="ghost" onClick={() => openPage("contact")}>Kontakt</button>
           </div>
         </div>
-        <div className="heroSidePanel">
-          <div className="heroStatCard"><strong>Community</strong><span>Brotherhood & Zusammenhalt</span></div>
-          <div className="heroStatCard"><strong>Scenario</strong><span>Tactical & Magfed Gameplay</span></div>
-          <div className="heroStatCard"><strong>Teamwear</strong><span>Professioneller Auftritt</span></div>
+
+        <div className="heroEmblemBox">
+          <img src="/logo.png" alt="Demon Lords Germany Logo" />
+          <div>
+            <strong>Demon Lords</strong>
+            <span>Brotherhood • Loyalty • Respect</span>
+          </div>
         </div>
       </section>
 
-      <section className="homeSectionTitle fullWidth"><span>Community Bereiche</span></section>
+      <section className="homeSectionTitle fullWidth"><span>Schnellzugriff</span></section>
 
-      <section className="featurePanel large">
-        <div className="featureTop"><span>01</span><strong>Vereinskleidung</strong></div>
-        <h3>Live Bestellsystem</h3>
-        <p>Mitglieder-Login, Admin-Bereich, Live-Bestellungen, Timer und Teamwear-Verwaltung direkt auf der Webseite.</p>
-        <button onClick={() => openPage("clothing")}>Zum System</button>
+      <section className="quickActionCard redGlow" onClick={() => openPage("clothing")}>
+        <span>01</span>
+        <h3>Vereinskleidung</h3>
+        <p>Live-Bestellsystem für T-Shirts, Polos und Hoodies mit Adminbereich.</p>
       </section>
 
-      <section className="featurePanel">
-        <div className="featureTop"><span>02</span><strong>Events</strong></div>
-        <h3>Operations & Spieltage</h3>
-        <p>Trainings, Scenario Games, Teamtreffen und Event-Organisation zentral an einem Ort.</p>
-        <button onClick={() => openPage("events")}>Events ansehen</button>
+      <section className="quickActionCard" onClick={() => openPage("events")}>
+        <span>02</span>
+        <h3>Events</h3>
+        <p>Trainings, Spieltage, Scenario Games und Teamtreffen.</p>
       </section>
 
+      <section className="quickActionCard" onClick={() => openPage("team")}>
+        <span>03</span>
+        <h3>Team</h3>
+        <p>Rangstruktur, Rollen und Aufbau der Demon Lords Germany.</p>
+      </section>
+
+      <section className="panel homeMission fullWidth">
+        <div>
+          <p className="eyebrow">Mission Statement</p>
+          <h3>Mehr als nur ein Team</h3>
+          <p>
+            Demon Lords Germany steht für kontrolliertes Auftreten, klare Kommunikation und eine
+            Community, die auf Respekt, Verlässlichkeit und Teamplay aufgebaut ist.
+          </p>
+        </div>
+        <div className="missionTiles">
+          <div><strong>01</strong><span>Brotherhood</span></div>
+          <div><strong>02</strong><span>Tactical Mindset</span></div>
+          <div><strong>03</strong><span>Teamwear</span></div>
+        </div>
+      </section>
+
+      <section className="homeSectionTitle fullWidth"><span>Bereiche</span></section>
+
       <section className="featurePanel">
-        <div className="featureTop"><span>03</span><strong>Galerie</strong></div>
+        <div className="featureTop"><span>04</span><strong>Galerie</strong></div>
         <h3>Team & Action</h3>
-        <p>Bilder von Spieltagen, Tactical Gear, Woodland-Events und Brotherhood-Momenten.</p>
+        <p>Bilder von Spieltagen, Ausrüstung, Woodland-Events und Brotherhood-Momenten.</p>
         <button onClick={() => openPage("gallery")}>Galerie öffnen</button>
       </section>
 
-      <section className="featurePanel wide">
-        <div className="featureTop"><span>04</span><strong>Team Structure</strong></div>
-        <h3>Klare Rollen. Klare Struktur.</h3>
-        <p>Unsere Rangstruktur sorgt für Organisation, Teamplay und professionelles Auftreten auf und neben dem Spielfeld.</p>
-        <button onClick={() => openPage("team")}>Team ansehen</button>
+      <section className="featurePanel">
+        <div className="featureTop"><span>05</span><strong>Downloads</strong></div>
+        <h3>Regeln & Infos</h3>
+        <p>Vereinsregeln, Eventinfos und Packlisten für Mitglieder und Events.</p>
+        <button onClick={() => openPage("downloads")}>Downloads</button>
+      </section>
+
+      <section className="featurePanel">
+        <div className="featureTop"><span>06</span><strong>Kontakt</strong></div>
+        <h3>Join the Brotherhood</h3>
+        <p>Facebook, Instagram und Kontaktmöglichkeiten für Interessierte und Mitglieder.</p>
+        <button onClick={() => openPage("contact")}>Kontakt aufnehmen</button>
       </section>
 
       <section className="panel finalHomeBanner fullWidth">
         <div>
           <h3>Brotherhood. Loyalty. Respect.</h3>
-          <p>Demon Lords Germany steht für taktisches Gameplay, Respekt und eine starke Community.</p>
+          <p>Eine Community für Magfed Paintball, Scenario Games und taktisches Teamplay.</p>
         </div>
-        <button onClick={() => openPage("contact")}>Kontakt aufnehmen</button>
+        <button onClick={() => openPage("about")}>Mehr erfahren</button>
       </section>
     </div>
   );
@@ -928,5 +960,5 @@ footer{border-top:1px solid #240000;background:#050505;color:#d0d0d0;text-align:
 @media(max-width:1000px){.site{overflow:auto}.hero{height:auto;min-height:210px}.logo{width:125px}.headline{padding-left:140px;padding-right:140px}.headline h1{font-size:48px}.headline h2{font-size:30px}.headline p{font-size:14px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr 1fr}.largePanel{grid-column:1/-1}.nav{justify-content:flex-start}}
 @media(max-width:1000px){.contactPagePro{grid-template-columns:1fr 1fr}.contactHero,.joinPanel,.contactSectionTitle,.contactFinal{grid-column:1/-1}.joinPanel{grid-template-columns:1fr}.contactHero h3{font-size:38px}.contactHero p{font-size:18px}.downloadsPagePro{grid-template-columns:1fr 1fr}.downloadsHero,.downloadsTitle,.downloadsInfoBox{grid-column:1/-1}.downloadsFeatureGrid{grid-template-columns:1fr 1fr}.downloadsHero h3{font-size:38px}.downloadsHero p{font-size:18px}.galleryPagePro{grid-template-columns:1fr 1fr}.galleryHeroPro,.galleryIntro,.galleryUploadHint{grid-column:1/-1}.galleryFeatureList{grid-template-columns:1fr 1fr}.galleryHeroPro h3{font-size:38px}.galleryHeroPro p{font-size:18px}.eventsPage{grid-template-columns:1fr 1fr}.eventsHero,.nextEvent,.eventsSectionTitle,.eventInfoBox{grid-column:1/-1}.nextEventContent{grid-template-columns:1fr}.eventFeatureGrid{grid-template-columns:1fr 1fr}.eventsHero h3{font-size:38px}.eventsHero p{font-size:18px}.teamPagePro{grid-template-columns:1fr 1fr}.teamCommandHero,.chainPanel{grid-column:1/-1}.chainPanel{grid-template-columns:1fr}.chainLine{grid-template-columns:repeat(3,1fr)}.teamHeroInner h3{font-size:38px}.teamHeroInner p{font-size:18px}.aboutPage{grid-template-columns:1fr 1fr}.aboutHero,.missionPanel,.aboutQuote,.aboutStory{grid-column:1/-1}.missionPanel{grid-template-columns:1fr}.aboutContent h3{font-size:38px}.aboutContent p{font-size:18px}}
 
-@media(max-width:700px){.hero{min-height:250px}.logo{width:105px}.logo.right{display:none}.headline{padding:120px 12px 20px}.headline h1{font-size:34px;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:12px;letter-spacing:.1em;white-space:normal}.mobileMenuButton{display:block}.nav{display:none;flex-direction:column;align-items:stretch;padding:10px}.nav.open{display:flex}.nav button{width:100%;text-align:left}.content{padding:10px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr}.panel{padding:16px}.panel h3{font-size:25px}.panel p,.panel ul{font-size:16px}.galleryItem{min-height:130px}.homePagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.cinematicHero{position:relative;overflow:hidden;min-height:540px;display:grid;grid-template-columns:1.2fr .55fr;gap:24px;align-items:center;background:linear-gradient(135deg,rgba(70,0,0,.62),rgba(3,3,3,.98)),radial-gradient(circle at top right,rgba(255,0,0,.24),transparent 35%)}.heroOverlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.8),rgba(0,0,0,.25),rgba(0,0,0,.85)),radial-gradient(circle at center,rgba(255,255,255,.05),transparent 55%);pointer-events:none}.heroContent{position:relative;z-index:2;max-width:900px}.heroEyebrow{display:inline-block;border:1px solid #8b0000;background:rgba(0,0,0,.45);padding:8px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:.14em;color:#ff2119;font-size:12px;margin-bottom:18px}.heroContent h1{font-size:74px;line-height:.95;margin-bottom:22px;text-transform:uppercase}.heroContent h1 span{display:block;color:#ff2119;font-size:34px;margin-top:16px}.heroText{max-width:780px;font-size:21px;line-height:1.75;color:#ddd}.heroButtons{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.heroButtons button,.featurePanel button,.finalHomeBanner button{border:0;border-radius:8px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.heroButtons .ghost{background:#070707;border:1px solid #8b0000}.heroSidePanel{position:relative;z-index:2;display:grid;gap:14px}.heroStatCard{border:1px solid rgba(150,150,150,.42);border-radius:10px;background:linear-gradient(180deg,rgba(12,12,12,.95),rgba(4,4,4,.98));padding:20px;min-height:120px;display:flex;flex-direction:column;justify-content:center}.heroStatCard strong{display:block;color:#ff2119;font-size:28px;text-transform:uppercase;margin-bottom:6px}.heroStatCard span{color:#ddd;font-size:16px}.homeSectionTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ff2119;font-weight:700}.featurePanel{min-height:320px;border:1px solid rgba(150,150,150,.42);border-radius:10px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:22px;position:relative;overflow:hidden}.featurePanel.large{grid-column:span 2;min-height:360px}.featurePanel.wide{grid-column:span 2}.featureTop{display:flex;align-items:center;gap:12px;margin-bottom:20px}.featureTop span{width:42px;height:42px;border:1px solid #8b0000;border-radius:8px;background:linear-gradient(180deg,#2a0505,#060606);display:flex;align-items:center;justify-content:center;color:#ff2119;font-weight:700}.featureTop strong{text-transform:uppercase;letter-spacing:.1em;color:#ddd}.featurePanel h3{font-size:34px;margin-bottom:14px}.featurePanel p{font-size:17px;line-height:1.7;color:#ddd;max-width:720px}.featurePanel button{margin-top:18px}.finalHomeBanner{display:flex;justify-content:space-between;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(90,0,0,.32),rgba(0,0,0,.95))}.finalHomeBanner h3{font-size:38px}.finalHomeBanner p{font-size:18px;max-width:850px}@media(max-width:1000px){.homePagePro{grid-template-columns:1fr 1fr}.cinematicHero,.homeSectionTitle,.finalHomeBanner{grid-column:1/-1}.cinematicHero{grid-template-columns:1fr;min-height:auto}.heroContent h1{font-size:54px}.heroContent h1 span{font-size:28px}.heroText{font-size:18px}.featurePanel.large,.featurePanel.wide{grid-column:span 1}.finalHomeBanner{flex-direction:column;align-items:flex-start}}@media(max-width:700px){.homePagePro{grid-template-columns:1fr}.cinematicHero,.featurePanel,.finalHomeBanner{grid-column:1/-1}.heroContent h1{font-size:38px}.heroContent h1 span{font-size:22px}.heroText{font-size:16px}.heroButtons{flex-direction:column}.heroButtons button,.featurePanel button,.finalHomeBanner button{width:100%}.featurePanel.large,.featurePanel.wide{grid-column:span 1}.featurePanel h3{font-size:28px}.finalHomeBanner h3{font-size:28px}}footer{font-size:9px;letter-spacing:.1em}.contactPagePro{grid-template-columns:1fr}.contactHero,.joinPanel,.socialCard,.contactInfoCard,.contactFinal{grid-column:1/-1}.contactHero h3{font-size:30px}.contactHero p{font-size:16px}.joinPanel h4,.socialCard h4,.contactInfoCard h4,.contactFinal h4{font-size:24px}.downloadsPagePro{grid-template-columns:1fr}.downloadsHero,.downloadsTitle,.downloadCard,.downloadsInfoBox{grid-column:1/-1}.downloadsHero h3{font-size:30px}.downloadsHero p{font-size:16px}.downloadsFeatureGrid{grid-template-columns:1fr}.galleryPagePro{grid-template-columns:1fr}.galleryHeroPro,.galleryIntro,.galleryCardPro,.galleryUploadHint{grid-column:1/-1}.galleryHeroPro h3{font-size:30px}.galleryHeroPro p{font-size:16px}.galleryFeatureList{grid-template-columns:1fr}.galleryImagePlaceholder{height:170px}.eventsPage{grid-template-columns:1fr}.eventsHero,.nextEvent,.eventCard,.eventInfoBox{grid-column:1/-1}.eventsHero h3{font-size:30px}.eventsHero p{font-size:16px}.eventFeatureGrid{grid-template-columns:1fr}.nextEventContent h4{font-size:24px}.eventCountdownPlaceholder strong{font-size:22px}.teamPagePro{grid-template-columns:1fr}.teamCommandHero,.chainPanel,.rankCardPro{grid-column:1/-1}.chainLine{grid-template-columns:1fr 1fr}.teamHeroInner h3{font-size:30px}.teamHeroInner p{font-size:16px}.rankCardPro{min-height:auto}.rankTitle{font-size:22px}.rankShort{width:52px;height:52px}.memberCardPro{align-items:center}.aboutPage{grid-template-columns:1fr}.aboutContent h3{font-size:30px}.aboutContent p{font-size:16px}.aboutStory,.valueCard,.missionPanel,.aboutQuote{grid-column:1/-1}.aboutQuote blockquote{font-size:20px;padding:0 10px}}
+@media(max-width:700px){.hero{min-height:250px}.logo{width:105px}.logo.right{display:none}.headline{padding:120px 12px 20px}.headline h1{font-size:34px;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:12px;letter-spacing:.1em;white-space:normal}.mobileMenuButton{display:block}.nav{display:none;flex-direction:column;align-items:stretch;padding:10px}.nav.open{display:flex}.nav button{width:100%;text-align:left}.content{padding:10px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr}.panel{padding:16px}.panel h3{font-size:25px}.panel p,.panel ul{font-size:16px}.galleryItem{min-height:130px}.homePagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.cinematicHero{position:relative;overflow:hidden;min-height:560px;display:grid;grid-template-columns:1.2fr .55fr;gap:28px;align-items:center;background:linear-gradient(135deg,rgba(70,0,0,.62),rgba(3,3,3,.98)),radial-gradient(circle at top right,rgba(255,0,0,.24),transparent 35%)}.heroOverlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.84),rgba(0,0,0,.24),rgba(0,0,0,.85)),radial-gradient(circle at center,rgba(255,255,255,.05),transparent 55%);pointer-events:none}.heroContent{position:relative;z-index:2;max-width:900px}.heroEyebrow{display:inline-block;border:1px solid #8b0000;background:rgba(0,0,0,.5);padding:8px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:.14em;color:#ff2119;font-size:12px;margin-bottom:18px}.heroContent h1{font-size:72px;line-height:.95;margin-bottom:22px;text-transform:uppercase;letter-spacing:.01em}.heroContent h1 span{display:block;color:#ff2119;font-size:30px;margin-top:16px;line-height:1.15}.heroText{max-width:820px;font-size:21px;line-height:1.75;color:#ddd}.heroButtons{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.heroButtons button,.featurePanel button,.finalHomeBanner button,.quickActionCard button{border:0;border-radius:8px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.heroButtons .ghost{background:#070707;border:1px solid #8b0000}.heroEmblemBox{position:relative;z-index:2;border:1px solid rgba(185,20,16,.65);border-radius:14px;background:linear-gradient(180deg,rgba(12,12,12,.9),rgba(3,3,3,.98));min-height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 28px rgba(185,20,16,.16)}.heroEmblemBox img{width:min(220px,75%);filter:drop-shadow(0 0 16px rgba(255,0,0,.5))}.heroEmblemBox strong{display:block;color:#ff2119;font-size:28px;text-transform:uppercase;margin-top:18px}.heroEmblemBox span{display:block;color:#aaa;text-transform:uppercase;letter-spacing:.12em;font-size:12px;margin-top:6px}.homeSectionTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ff2119;font-weight:700}.quickActionCard{border:1px solid rgba(150,150,150,.42);border-radius:10px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:22px;min-height:190px;cursor:pointer;transition:.25s;position:relative;overflow:hidden}.quickActionCard::before,.featurePanel::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.12),transparent 40%);pointer-events:none}.quickActionCard:hover,.featurePanel:hover{transform:translateY(-3px);border-color:#8b0000;box-shadow:0 0 24px rgba(185,20,16,.18)}.quickActionCard span{position:relative;color:#ff2119;font-weight:700;letter-spacing:.1em}.quickActionCard h3{position:relative;font-size:28px;margin:14px 0 8px}.quickActionCard p{position:relative;color:#ddd;font-size:16px;line-height:1.55}.quickActionCard.redGlow{border-color:#8b0000;box-shadow:0 0 20px rgba(185,20,16,.12)}.homeMission{grid-column:1/-1;display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center;background:linear-gradient(135deg,rgba(85,0,0,.28),rgba(0,0,0,.96))}.homeMission h3{font-size:38px}.homeMission p{font-size:18px;line-height:1.7}.missionTiles{display:grid;grid-template-columns:1fr;gap:10px}.missionTiles div{border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:16px}.missionTiles strong{display:block;color:#ff2119;font-size:20px}.missionTiles span{color:#ddd;text-transform:uppercase;letter-spacing:.08em}.featurePanel{min-height:300px;border:1px solid rgba(150,150,150,.42);border-radius:10px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));padding:22px;position:relative;overflow:hidden}.featureTop{position:relative;display:flex;align-items:center;gap:12px;margin-bottom:20px}.featureTop span{width:42px;height:42px;border:1px solid #8b0000;border-radius:8px;background:linear-gradient(180deg,#2a0505,#060606);display:flex;align-items:center;justify-content:center;color:#ff2119;font-weight:700}.featureTop strong{text-transform:uppercase;letter-spacing:.1em;color:#ddd}.featurePanel h3{position:relative;font-size:30px;margin-bottom:14px}.featurePanel p{position:relative;font-size:16px;line-height:1.65;color:#ddd}.featurePanel button{position:relative;margin-top:18px}.finalHomeBanner{display:flex;justify-content:space-between;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(90,0,0,.32),rgba(0,0,0,.95))}.finalHomeBanner h3{font-size:38px}.finalHomeBanner p{font-size:18px;max-width:850px}@media(max-width:1000px){.homePagePro{grid-template-columns:1fr 1fr}.cinematicHero,.homeSectionTitle,.homeMission,.finalHomeBanner{grid-column:1/-1}.cinematicHero{grid-template-columns:1fr;min-height:auto}.heroContent h1{font-size:54px}.heroContent h1 span{font-size:26px}.heroText{font-size:18px}.heroEmblemBox{min-height:260px}.finalHomeBanner,.homeMission{grid-template-columns:1fr;flex-direction:column;align-items:flex-start}}@media(max-width:700px){.homePagePro{grid-template-columns:1fr}.cinematicHero,.quickActionCard,.featurePanel,.homeMission,.finalHomeBanner{grid-column:1/-1}.heroContent h1{font-size:38px}.heroContent h1 span{font-size:21px}.heroText{font-size:16px}.heroButtons{flex-direction:column}.heroButtons button,.featurePanel button,.finalHomeBanner button{width:100%}.heroEmblemBox{min-height:220px}.heroEmblemBox img{width:150px}.featurePanel h3,.quickActionCard h3{font-size:26px}.homeMission h3,.finalHomeBanner h3{font-size:28px}}footer{font-size:9px;letter-spacing:.1em}.contactPagePro{grid-template-columns:1fr}.contactHero,.joinPanel,.socialCard,.contactInfoCard,.contactFinal{grid-column:1/-1}.contactHero h3{font-size:30px}.contactHero p{font-size:16px}.joinPanel h4,.socialCard h4,.contactInfoCard h4,.contactFinal h4{font-size:24px}.downloadsPagePro{grid-template-columns:1fr}.downloadsHero,.downloadsTitle,.downloadCard,.downloadsInfoBox{grid-column:1/-1}.downloadsHero h3{font-size:30px}.downloadsHero p{font-size:16px}.downloadsFeatureGrid{grid-template-columns:1fr}.galleryPagePro{grid-template-columns:1fr}.galleryHeroPro,.galleryIntro,.galleryCardPro,.galleryUploadHint{grid-column:1/-1}.galleryHeroPro h3{font-size:30px}.galleryHeroPro p{font-size:16px}.galleryFeatureList{grid-template-columns:1fr}.galleryImagePlaceholder{height:170px}.eventsPage{grid-template-columns:1fr}.eventsHero,.nextEvent,.eventCard,.eventInfoBox{grid-column:1/-1}.eventsHero h3{font-size:30px}.eventsHero p{font-size:16px}.eventFeatureGrid{grid-template-columns:1fr}.nextEventContent h4{font-size:24px}.eventCountdownPlaceholder strong{font-size:22px}.teamPagePro{grid-template-columns:1fr}.teamCommandHero,.chainPanel,.rankCardPro{grid-column:1/-1}.chainLine{grid-template-columns:1fr 1fr}.teamHeroInner h3{font-size:30px}.teamHeroInner p{font-size:16px}.rankCardPro{min-height:auto}.rankTitle{font-size:22px}.rankShort{width:52px;height:52px}.memberCardPro{align-items:center}.aboutPage{grid-template-columns:1fr}.aboutContent h3{font-size:30px}.aboutContent p{font-size:16px}.aboutStory,.valueCard,.missionPanel,.aboutQuote{grid-column:1/-1}.aboutQuote blockquote{font-size:20px;padding:0 10px}}
 `;
