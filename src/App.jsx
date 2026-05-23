@@ -218,44 +218,53 @@ function AboutPage() {
 }
 
 function TeamPage() {
-  const ranks = [
+  const commandRanks = [
     {
       title: "Leader",
-      subtitle: "Führung & Verantwortung",
+      short: "LD",
+      subtitle: "Command & Direction",
       description:
-        "Der Leader gibt die Richtung vor, trifft finale Entscheidungen und repräsentiert Demon Lords Germany nach außen.",
-      members: ["Platzhalter Leader"],
+        "Verantwortet die Ausrichtung, finale Entscheidungen und das Auftreten von Demon Lords Germany nach außen.",
+      members: ["Leader Name"],
     },
     {
       title: "Co-Leader",
-      subtitle: "Stellvertretende Führung",
+      short: "CO",
+      subtitle: "Second Command",
       description:
-        "Der Co-Leader unterstützt die Führung, koordiniert interne Abläufe und übernimmt Verantwortung bei Events und Teamentscheidungen.",
-      members: ["Platzhalter Co-Leader"],
+        "Unterstützt die Führung, koordiniert interne Abläufe und übernimmt Verantwortung bei Teamentscheidungen.",
+      members: ["Co-Leader Name"],
     },
     {
       title: "Secretary",
+      short: "SEC",
       subtitle: "Organisation & Verwaltung",
       description:
-        "Der Secretary kümmert sich um Kommunikation, Listen, Dokumente, Mitgliederverwaltung und organisatorische Themen.",
-      members: ["Platzhalter Secretary"],
+        "Verantwortlich für Listen, Dokumente, Kommunikation und organisatorische Themen innerhalb des Teams.",
+      members: ["Secretary Name"],
     },
+  ];
+
+  const fieldRanks = [
     {
       title: "First Sergeant",
-      subtitle: "Struktur & Einsatzkoordination",
+      short: "1SG",
+      subtitle: "Struktur & Briefing",
       description:
-        "Der First Sergeant unterstützt bei Teamstruktur, Briefings, Spielvorbereitung und taktischer Abstimmung.",
-      members: ["Platzhalter First Sergeant"],
+        "Sorgt für Struktur, Spielvorbereitung, Briefings und taktische Abstimmung im Team.",
+      members: ["First Sergeant Name"],
     },
     {
       title: "Officer",
+      short: "OFC",
       subtitle: "Teamführung im Feld",
       description:
-        "Officer übernehmen Verantwortung in Gruppen, unterstützen neue Mitglieder und sorgen für klare Kommunikation im Spiel.",
+        "Officer unterstützen Gruppen, helfen neuen Mitgliedern und halten Kommunikation im Spiel klar.",
       members: ["Officer 1", "Officer 2"],
     },
     {
       title: "Members",
+      short: "MBR",
       subtitle: "Brotherhood & Teamkern",
       description:
         "Members bilden den aktiven Kern von Demon Lords Germany und stehen für Loyalität, Respekt und Teamplay.",
@@ -263,22 +272,30 @@ function TeamPage() {
     },
   ];
 
+  const allRanks = [...commandRanks, ...fieldRanks];
+
   return (
-    <div className="teamPage">
-      <section className="panel teamHero fullWidth">
-        <p className="eyebrow">Demon Lords Germany Structure</p>
-        <h3>Team & Rangstruktur</h3>
-        <p>
-          Unsere Struktur sorgt für klare Verantwortung, starke Organisation und taktisches Zusammenspiel.
-          Jeder Rang hat seine Aufgabe — vom Leader bis zum Member.
-        </p>
+    <div className="teamPagePro">
+      <section className="panel teamCommandHero fullWidth">
+        <div className="teamHeroShade" />
+        <div className="teamHeroInner">
+          <p className="eyebrow">Demon Lords Germany Structure</p>
+          <h3>Team & Command Structure</h3>
+          <p>
+            Klare Rollen. Klare Verantwortung. Ein Team. Unsere Rangstruktur sorgt für Organisation,
+            Disziplin und ein professionelles Auftreten — auf Events, im Feld und innerhalb der Community.
+          </p>
+        </div>
       </section>
 
-      <section className="panel rankOverview fullWidth">
-        <h4>Rangordnung</h4>
-        <div className="rankLine">
-          {ranks.map((rank, index) => (
-            <div className="rankStep" key={rank.title}>
+      <section className="panel chainPanel fullWidth">
+        <div>
+          <h4>Chain of Command</h4>
+          <p>Vom Leader bis zum Member — jeder Rang hat seine Aufgabe innerhalb der Brotherhood.</p>
+        </div>
+        <div className="chainLine">
+          {allRanks.map((rank, index) => (
+            <div className="chainStep" key={rank.title}>
               <span>{index + 1}</span>
               <strong>{rank.title}</strong>
             </div>
@@ -286,28 +303,54 @@ function TeamPage() {
         </div>
       </section>
 
-      {ranks.map((rank) => (
-        <section className="panel rankCard" key={rank.title}>
-          <div className="rankBadge">{rank.title}</div>
-          <h4>{rank.subtitle}</h4>
-          <p>{rank.description}</p>
+      <section className="teamSectionTitle fullWidth">
+        <span>Command Staff</span>
+      </section>
 
-          <div className="memberSlots">
-            {rank.members.map((member) => (
-              <div className="memberCard" key={member}>
-                <div className="avatarPlaceholder">
-                  <img src="/logo.png" alt="Demon Lords Logo" />
-                </div>
-                <div>
-                  <strong>{member}</strong>
-                  <span>{rank.title}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+      {commandRanks.map((rank) => (
+        <RankCardPro rank={rank} key={rank.title} featured />
+      ))}
+
+      <section className="teamSectionTitle fullWidth">
+        <span>Field Unit</span>
+      </section>
+
+      {fieldRanks.map((rank) => (
+        <RankCardPro rank={rank} key={rank.title} />
       ))}
     </div>
+  );
+}
+
+function RankCardPro({ rank, featured = false }) {
+  return (
+    <section className={`panel rankCardPro ${featured ? "featured" : ""}`}>
+      <div className="rankTop">
+        <div className="rankShort">{rank.short}</div>
+        <div>
+          <div className="rankTitle">{rank.title}</div>
+          <div className="rankSubtitle">{rank.subtitle}</div>
+        </div>
+      </div>
+
+      <p>{rank.description}</p>
+
+      <div className="rankDivider" />
+
+      <div className="memberListPro">
+        {rank.members.map((member) => (
+          <div className="memberCardPro" key={member}>
+            <div className="memberAvatarPro">
+              <img src="/logo.png" alt="Demon Lords Logo" />
+            </div>
+            <div className="memberInfoPro">
+              <strong>{member}</strong>
+              <span>{rank.title}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -576,13 +619,13 @@ body{font-family:'Oswald',Arial,sans-serif;color:#f2f2f2;background:#000;overflo
 
 .content{flex:1;min-height:0;overflow:auto;padding:16px;background:radial-gradient(circle at top,#120000,#000 45%)}
 .pageGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.twoColumns{grid-template-columns:1.4fr .8fr}.fullWidth{grid-column:1/-1}.panel{border:1px solid rgba(150,150,150,.42);border-radius:8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 18px rgba(0,0,0,.75);padding:22px}.largePanel{min-height:240px}.heroPanel{background:linear-gradient(135deg,rgba(70,0,0,.45),rgba(5,5,5,.98)),radial-gradient(circle at top right,rgba(255,0,0,.16),transparent 35%)}
-.eyebrow{color:#ff2119;text-transform:uppercase;letter-spacing:.2em;font-size:13px;margin:0 0 12px}.panel h3{margin:0 0 16px;color:#ef1b16;font-size:32px;text-transform:uppercase;letter-spacing:.03em}.panel h4{margin:0 0 10px;color:#ef1b16;font-size:22px;text-transform:uppercase}.panel p{color:#ddd;font-size:18px;line-height:1.55}.panel ul{margin:0;padding-left:20px;color:#ddd;font-size:18px;line-height:1.8}.buttonRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.buttonRow button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-size:16px;text-transform:uppercase;cursor:pointer}.buttonRow button.ghost{border:1px solid #8b0000;background:#070707}.infoCard{min-height:160px}.warning{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;color:#ffb7b7!important}.galleryGrid{grid-template-columns:repeat(3,1fr)}.teamPage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.teamHero{min-height:280px;background:linear-gradient(135deg,rgba(70,0,0,.5),rgba(5,5,5,.96)),radial-gradient(circle at top right,rgba(255,0,0,.2),transparent 35%)}.teamHero h3{font-size:46px}.teamHero p{max-width:850px;font-size:20px;line-height:1.65}.rankOverview{padding:18px 22px}.rankOverview h4{margin-bottom:18px}.rankLine{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.rankStep{border:1px solid #3a3a3a;border-radius:8px;background:rgba(0,0,0,.55);padding:14px;text-align:center;position:relative}.rankStep span{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#8b0000;color:#fff;font-weight:700;margin-bottom:8px}.rankStep strong{display:block;color:#eee;text-transform:uppercase;font-size:14px;letter-spacing:.04em}.rankCard{min-height:330px;position:relative;overflow:hidden}.rankCard::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.14),transparent 38%);pointer-events:none}.rankBadge{display:inline-block;border:1px solid #8b0000;background:linear-gradient(180deg,#2b0606,#090909);color:#ff2119;border-radius:6px;padding:8px 12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}.rankCard h4{font-size:24px}.rankCard p{font-size:16px;line-height:1.55}.memberSlots{display:grid;grid-template-columns:1fr;gap:10px;margin-top:18px}.memberCard{display:flex;align-items:center;gap:12px;border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.55);padding:10px}.avatarPlaceholder{width:54px;height:54px;border:1px solid #8b0000;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#050505;overflow:hidden;flex:0 0 auto}.avatarPlaceholder img{width:44px;height:44px;object-fit:contain}.memberCard strong{display:block;color:#fff;font-size:17px}.memberCard span{display:block;color:#aaa;text-transform:uppercase;font-size:12px;letter-spacing:.06em}.aboutPage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.aboutHero{position:relative;min-height:340px;overflow:hidden;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(5,5,5,.96)),radial-gradient(circle at top right,rgba(255,0,0,.2),transparent 35%)}.aboutOverlay{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.05),transparent 45%),linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.15),rgba(0,0,0,.65))}.aboutContent{position:relative;z-index:2;max-width:900px}.aboutContent h3{font-size:48px;margin-bottom:18px}.aboutContent p{max-width:850px;font-size:20px;line-height:1.7}.aboutStory{grid-column:span 2;min-height:260px}.valueCard{min-height:260px}.missionPanel{grid-column:1/-1;display:grid;grid-template-columns:1.2fr .9fr;gap:20px;align-items:stretch}.missionStats{display:grid;grid-template-columns:1fr;gap:12px}.missionStats div{border:1px solid #3a3a3a;border-radius:8px;padding:18px;background:rgba(0,0,0,.45)}.missionStats strong{display:block;color:#ef1b16;font-size:22px;text-transform:uppercase;margin-bottom:6px}.missionStats span{color:#ddd}.aboutQuote{display:flex;align-items:center;justify-content:center;min-height:140px;background:linear-gradient(135deg,rgba(90,0,0,.3),rgba(0,0,0,.9))}.aboutQuote blockquote{margin:0;color:#ddd;font-size:28px;text-align:center;font-family:'Rye',Georgia,serif;line-height:1.6;max-width:1000px}.galleryItem{min-height:180px;border:1px solid #333;border-radius:8px;background:linear-gradient(135deg,#111,#030303);display:flex;align-items:center;justify-content:center;color:#777;font-size:22px;text-transform:uppercase}
+.eyebrow{color:#ff2119;text-transform:uppercase;letter-spacing:.2em;font-size:13px;margin:0 0 12px}.panel h3{margin:0 0 16px;color:#ef1b16;font-size:32px;text-transform:uppercase;letter-spacing:.03em}.panel h4{margin:0 0 10px;color:#ef1b16;font-size:22px;text-transform:uppercase}.panel p{color:#ddd;font-size:18px;line-height:1.55}.panel ul{margin:0;padding-left:20px;color:#ddd;font-size:18px;line-height:1.8}.buttonRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.buttonRow button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-size:16px;text-transform:uppercase;cursor:pointer}.buttonRow button.ghost{border:1px solid #8b0000;background:#070707}.infoCard{min-height:160px}.warning{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;color:#ffb7b7!important}.galleryGrid{grid-template-columns:repeat(3,1fr)}.teamPagePro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.teamCommandHero{position:relative;min-height:330px;overflow:hidden;background:linear-gradient(135deg,rgba(75,0,0,.55),rgba(2,2,2,.98)),radial-gradient(circle at top right,rgba(255,0,0,.22),transparent 34%)}.teamHeroShade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.75),rgba(0,0,0,.25),rgba(0,0,0,.75)),radial-gradient(circle at center,rgba(255,255,255,.055),transparent 50%)}.teamHeroInner{position:relative;z-index:2;max-width:980px}.teamHeroInner h3{font-size:50px;letter-spacing:.02em}.teamHeroInner p{max-width:900px;font-size:20px;line-height:1.7}.chainPanel{display:grid;grid-template-columns:.65fr 1.35fr;gap:20px;align-items:center;padding:20px 22px}.chainPanel h4{font-size:24px}.chainPanel p{font-size:16px;margin:0}.chainLine{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.chainStep{position:relative;border:1px solid #343434;border-radius:8px;background:linear-gradient(180deg,rgba(18,18,18,.95),rgba(3,3,3,.95));padding:12px 8px;text-align:center;overflow:hidden}.chainStep::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(255,0,0,.16),transparent 55%);pointer-events:none}.chainStep span{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#8b0000;color:#fff;font-weight:700;margin-bottom:8px}.chainStep strong{position:relative;display:block;color:#eee;text-transform:uppercase;font-size:12px;letter-spacing:.05em}.teamSectionTitle{grid-column:1/-1;border-left:4px solid #b91410;background:linear-gradient(90deg,rgba(100,0,0,.28),rgba(0,0,0,0));padding:10px 14px;text-transform:uppercase;letter-spacing:.18em;color:#ddd;font-weight:700}.teamSectionTitle span{color:#ff2119}.rankCardPro{position:relative;min-height:345px;overflow:hidden;padding:18px;background:linear-gradient(180deg,rgba(13,13,13,.98),rgba(3,3,3,.98))}.rankCardPro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(255,0,0,.12),transparent 38%);pointer-events:none}.rankCardPro.featured{border-color:rgba(185,20,16,.8);box-shadow:inset 0 0 30px rgba(255,255,255,.03),0 0 22px rgba(185,20,16,.12)}.rankTop{position:relative;display:flex;gap:14px;align-items:center;margin-bottom:16px}.rankShort{width:58px;height:58px;border:1px solid #8b0000;border-radius:10px;background:linear-gradient(180deg,#2a0505,#060606);display:flex;align-items:center;justify-content:center;color:#ff2119;font-weight:700;font-size:18px;letter-spacing:.05em;box-shadow:0 0 14px rgba(255,0,0,.18)}.rankTitle{font-size:25px;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.04em}.rankSubtitle{color:#aaa;text-transform:uppercase;font-size:12px;letter-spacing:.12em}.rankCardPro p{position:relative;color:#ddd;font-size:16px;line-height:1.55;margin:0}.rankDivider{position:relative;height:1px;background:linear-gradient(90deg,#8b0000,transparent);margin:18px 0}.memberListPro{position:relative;display:grid;grid-template-columns:1fr;gap:10px}.memberCardPro{display:flex;align-items:center;gap:12px;border:1px solid #333;border-radius:8px;background:rgba(0,0,0,.58);padding:10px;transition:.2s}.memberCardPro:hover{border-color:#8b0000;transform:translateY(-1px)}.memberAvatarPro{width:56px;height:56px;border:1px solid #8b0000;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#050505;overflow:hidden;flex:0 0 auto}.memberAvatarPro img{width:45px;height:45px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(255,0,0,.35))}.memberInfoPro strong{display:block;color:#fff;font-size:17px}.memberInfoPro span{display:block;color:#aaa;text-transform:uppercase;font-size:12px;letter-spacing:.06em}.aboutPage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.aboutHero{position:relative;min-height:340px;overflow:hidden;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(5,5,5,.96)),radial-gradient(circle at top right,rgba(255,0,0,.2),transparent 35%)}.aboutOverlay{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.05),transparent 45%),linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.15),rgba(0,0,0,.65))}.aboutContent{position:relative;z-index:2;max-width:900px}.aboutContent h3{font-size:48px;margin-bottom:18px}.aboutContent p{max-width:850px;font-size:20px;line-height:1.7}.aboutStory{grid-column:span 2;min-height:260px}.valueCard{min-height:260px}.missionPanel{grid-column:1/-1;display:grid;grid-template-columns:1.2fr .9fr;gap:20px;align-items:stretch}.missionStats{display:grid;grid-template-columns:1fr;gap:12px}.missionStats div{border:1px solid #3a3a3a;border-radius:8px;padding:18px;background:rgba(0,0,0,.45)}.missionStats strong{display:block;color:#ef1b16;font-size:22px;text-transform:uppercase;margin-bottom:6px}.missionStats span{color:#ddd}.aboutQuote{display:flex;align-items:center;justify-content:center;min-height:140px;background:linear-gradient(135deg,rgba(90,0,0,.3),rgba(0,0,0,.9))}.aboutQuote blockquote{margin:0;color:#ddd;font-size:28px;text-align:center;font-family:'Rye',Georgia,serif;line-height:1.6;max-width:1000px}.galleryItem{min-height:180px;border:1px solid #333;border-radius:8px;background:linear-gradient(135deg,#111,#030303);display:flex;align-items:center;justify-content:center;color:#777;font-size:22px;text-transform:uppercase}
 .orderSystem{height:100%;display:flex;flex-direction:column;gap:12px}.orderTopBar{display:flex;justify-content:space-between;align-items:center;gap:12px}.orderTopBar button,.orderSubmit,.adminForm button,.adminActive button,.passwordGrid button,.orderLoginForm button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:10px 14px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.orderDeadline{border:1px solid #8b0000;background:rgba(0,0,0,.62);border-radius:8px;padding:12px;text-align:center;box-shadow:0 0 16px rgba(255,0,0,.18)}.orderDeadline strong{display:block;color:#ff2119;text-transform:uppercase;letter-spacing:.08em}.orderDeadline span{display:block;margin-top:5px;font-weight:700}.orderDeadline small{display:block;color:#aaa;margin-top:3px}.orderDeadline.small{padding:8px 14px}.orderDeadline.closed{border-color:#ff1c15;background:rgba(120,0,0,.18)}.orderLayout{display:grid;grid-template-columns:minmax(350px,420px) minmax(0,1fr);gap:14px;min-height:0;flex:1}.orderFormPanel,.orderOverviewPanel{min-height:0;overflow:auto}.orderFormPanel h3,.orderOverviewPanel h3{margin:0;color:#ef1b16;text-transform:uppercase}.orderFormPanel p,.orderOverviewPanel p{font-size:15px;margin:6px 0 14px;color:#ddd}.orderFormPanel form{display:flex;flex-direction:column;gap:14px}.orderTwoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.orderShirtGrid{display:grid;grid-template-columns:1fr 132px 58px;gap:10px}.orderTwoProductCols{display:grid;grid-template-columns:1fr 70px;gap:18px}.orderFormPanel label,.orderLoginForm label,.passwordPanel label{display:block;color:#f1f1f1;font-size:14px}.orderFormPanel input,.orderFormPanel select,.orderFormPanel textarea,.orderLoginForm input,.adminForm input,.passwordPanel input{width:100%;margin-top:5px;height:36px;border-radius:5px;border:1px solid #444;background:#050505;color:#fff;padding:0 10px;font-family:'Oswald',Arial,sans-serif}.orderFormPanel textarea{height:44px;padding-top:8px}.clothingProduct h4{margin:0 0 8px;font-size:18px;text-transform:uppercase}.clothingProduct small{color:#ccc;font-size:13px}.orderSizeRow{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.orderSizeRow span{min-width:28px;text-align:center;border:1px solid #333;border-radius:4px;padding:2px 5px;background:#050505;font-size:12px}.memberTotalBox{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px}.memberTotalBox strong{color:#ff2119;font-size:22px}.closedNotice{border:1px solid #8b0000;background:rgba(120,0,0,.22);color:#ffb7b7;border-radius:5px;padding:12px;text-align:center;font-weight:700;text-transform:uppercase}.orderOverviewPanel{display:flex;flex-direction:column}.orderOverviewHead{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #242424;padding-bottom:12px}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm span,.orderError{color:#ff1c15;font-size:13px}.adminActive{display:flex;gap:8px}.passwordPanel{border-bottom:1px solid #242424;padding:12px 0}.passwordGrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.passwordPanel p{color:#55ff7a}.orderTableWrap{overflow:auto;flex:1;min-height:200px}.orderTableWrap table{width:100%;border-collapse:collapse;font-size:13px}.orderTableWrap th,.orderTableWrap td{padding:8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}.orderTableWrap th[colspan]{text-align:center}.price{color:#ff1610;font-weight:700}.noteCell{max-width:220px;white-space:normal;color:#ddd}.memberStatus{color:#55ff7a;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:24px}.orderBottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:12px;padding-top:12px}.orderCard{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:16px}.orderCard h3{margin:0 0 12px;color:#f01b15;text-align:center}.orderSummary{display:grid;grid-template-columns:34px 1fr 70px 100px;gap:6px;align-items:center;margin-bottom:6px}.orderSummary em,.orderPrice em{font-style:normal}.orderTotal{display:flex;justify-content:space-between;border-top:1px solid #555;padding-top:10px;margin-top:10px;color:#f01b15;font-size:22px}.orderPrice{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #333}.orderLoginPanel{max-width:560px;margin:20px auto;border:1px solid #8b0000;border-radius:10px;background:radial-gradient(circle at top,#232323,#050505 65%,#000);padding:28px;text-align:center;box-shadow:0 0 42px rgba(160,0,0,.48)}.orderLoginPanel img{width:150px}.orderLoginPanel h3{color:#ef1b16;text-transform:uppercase}.orderLoginForm{display:flex;flex-direction:column;gap:14px;text-align:left}
 
 footer{border-top:1px solid #240000;background:#050505;color:#d0d0d0;text-align:center;padding:12px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;flex:0 0 auto}
 
 @media(max-width:1000px){.site{overflow:auto}.hero{height:auto;min-height:210px}.logo{width:125px}.headline{padding-left:140px;padding-right:140px}.headline h1{font-size:48px}.headline h2{font-size:30px}.headline p{font-size:14px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr 1fr}.largePanel{grid-column:1/-1}.nav{justify-content:flex-start}}
-@media(max-width:1000px){.teamPage{grid-template-columns:1fr 1fr}.teamHero,.rankOverview{grid-column:1/-1}.rankLine{grid-template-columns:repeat(3,1fr)}.teamHero h3{font-size:38px}.teamHero p{font-size:18px}.aboutPage{grid-template-columns:1fr 1fr}.aboutHero,.missionPanel,.aboutQuote,.aboutStory{grid-column:1/-1}.missionPanel{grid-template-columns:1fr}.aboutContent h3{font-size:38px}.aboutContent p{font-size:18px}}
+@media(max-width:1000px){.teamPagePro{grid-template-columns:1fr 1fr}.teamCommandHero,.chainPanel{grid-column:1/-1}.chainPanel{grid-template-columns:1fr}.chainLine{grid-template-columns:repeat(3,1fr)}.teamHeroInner h3{font-size:38px}.teamHeroInner p{font-size:18px}.aboutPage{grid-template-columns:1fr 1fr}.aboutHero,.missionPanel,.aboutQuote,.aboutStory{grid-column:1/-1}.missionPanel{grid-template-columns:1fr}.aboutContent h3{font-size:38px}.aboutContent p{font-size:18px}}
 
-@media(max-width:700px){.hero{min-height:250px}.logo{width:105px}.logo.right{display:none}.headline{padding:120px 12px 20px}.headline h1{font-size:34px;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:12px;letter-spacing:.1em;white-space:normal}.mobileMenuButton{display:block}.nav{display:none;flex-direction:column;align-items:stretch;padding:10px}.nav.open{display:flex}.nav button{width:100%;text-align:left}.content{padding:10px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr}.panel{padding:16px}.panel h3{font-size:25px}.panel p,.panel ul{font-size:16px}.galleryItem{min-height:130px}footer{font-size:9px;letter-spacing:.1em}.teamPage{grid-template-columns:1fr}.teamHero,.rankOverview,.rankCard{grid-column:1/-1}.rankLine{grid-template-columns:1fr 1fr}.teamHero h3{font-size:30px}.teamHero p{font-size:16px}.rankCard{min-height:auto}.memberCard{align-items:center}.aboutPage{grid-template-columns:1fr}.aboutContent h3{font-size:30px}.aboutContent p{font-size:16px}.aboutStory,.valueCard,.missionPanel,.aboutQuote{grid-column:1/-1}.aboutQuote blockquote{font-size:20px;padding:0 10px}}
+@media(max-width:700px){.hero{min-height:250px}.logo{width:105px}.logo.right{display:none}.headline{padding:120px 12px 20px}.headline h1{font-size:34px;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:12px;letter-spacing:.1em;white-space:normal}.mobileMenuButton{display:block}.nav{display:none;flex-direction:column;align-items:stretch;padding:10px}.nav.open{display:flex}.nav button{width:100%;text-align:left}.content{padding:10px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr}.panel{padding:16px}.panel h3{font-size:25px}.panel p,.panel ul{font-size:16px}.galleryItem{min-height:130px}footer{font-size:9px;letter-spacing:.1em}.teamPagePro{grid-template-columns:1fr}.teamCommandHero,.chainPanel,.rankCardPro{grid-column:1/-1}.chainLine{grid-template-columns:1fr 1fr}.teamHeroInner h3{font-size:30px}.teamHeroInner p{font-size:16px}.rankCardPro{min-height:auto}.rankTitle{font-size:22px}.rankShort{width:52px;height:52px}.memberCardPro{align-items:center}.aboutPage{grid-template-columns:1fr}.aboutContent h3{font-size:30px}.aboutContent p{font-size:16px}.aboutStory,.valueCard,.missionPanel,.aboutQuote{grid-column:1/-1}.aboutQuote blockquote{font-size:20px;padding:0 10px}}
 `;
