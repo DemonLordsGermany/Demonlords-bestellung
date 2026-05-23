@@ -83,33 +83,52 @@ export default function App() {
 
 function StartPage({ openPage }) {
   return (
-    <div className="pageGrid">
-      <section className="panel heroPanel largePanel">
-        <p className="eyebrow">German Magfed Paintball Team</p>
-        <h3>Willkommen bei den Demon Lords Germany</h3>
+    <div className="pageGrid startGrid">
+      <section className="panel heroPanel mainHero">
+        <p className="eyebrow">German Magfed Paintball Community</p>
+        <h3>Demon Lords Germany</h3>
         <p>
-          Wir stehen für Brotherhood, Loyalität, taktisches Teamplay und eine starke Community.
-          Diese Webseite wird eure zentrale Plattform für Team, Events, Galerie und Vereinskleidung.
+          Taktisches Teamplay, Brotherhood und eine starke Community. Unsere Webseite bündelt ab jetzt
+          Teaminfos, Events, Galerie, Downloads und die komplette Vereinskleidung-Bestellung.
         </p>
         <div className="buttonRow">
-          <button onClick={() => openPage("clothing")}>Vereinskleidung ansehen</button>
-          <button className="ghost" onClick={() => openPage("about")}>Mehr über uns</button>
+          <button onClick={() => openPage("clothing")}>Vereinskleidung</button>
+          <button className="ghost" onClick={() => openPage("events")}>Nächste Events</button>
+          <button className="ghost" onClick={() => openPage("team")}>Unser Team</button>
         </div>
       </section>
 
-      <section className="panel infoCard">
+      <section className="panel statusCard">
         <h4>🔥 Fokus</h4>
-        <p>Magfed Paintball, Scenario Games, Teamwear und Community.</p>
+        <p>Magfed Paintball, Scenario Games, Teamwear und taktisches Auftreten.</p>
       </section>
 
-      <section className="panel infoCard">
+      <section className="panel statusCard">
         <h4>🛡️ Werte</h4>
-        <p>Brotherhood, Loyalty, Respect und taktisches Zusammenspiel.</p>
+        <p>Brotherhood. Loyalty. Respect. Zusammenhalt auf und neben dem Spielfeld.</p>
       </section>
 
-      <section className="panel infoCard">
-        <h4>👕 Merch</h4>
-        <p>Vereinskleidung, Hoodies, T-Shirts, Polos und Patches.</p>
+      <section className="panel statusCard">
+        <h4>👕 Vereinskleidung</h4>
+        <p>Live-Bestellung mit Mitglieder-Login, Admin-Bereich, Timer und Export.</p>
+      </section>
+
+      <section className="panel highlightCard">
+        <h4>📌 Aktueller Bereich</h4>
+        <p>Die Vereinskleidung ist bereits als Live-System vorbereitet.</p>
+        <button onClick={() => openPage("clothing")}>Zur Bestellung</button>
+      </section>
+
+      <section className="panel highlightCard">
+        <h4>📅 Events</h4>
+        <p>Hier werden später Trainings, Spieltage und Scenario-Events gepflegt.</p>
+        <button onClick={() => openPage("events")}>Events ansehen</button>
+      </section>
+
+      <section className="panel highlightCard">
+        <h4>📸 Galerie</h4>
+        <p>Platz für Teamfotos, Actionbilder und Event-Rückblicke.</p>
+        <button onClick={() => openPage("gallery")}>Galerie öffnen</button>
       </section>
     </div>
   );
