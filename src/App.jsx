@@ -136,26 +136,82 @@ function StartPage({ openPage }) {
 
 function AboutPage() {
   return (
-    <div className="pageGrid twoColumns">
-      <section className="panel largePanel">
-        <h3>Über uns</h3>
+    <div className="aboutPage">
+      <section className="panel aboutHero fullWidth">
+        <div className="aboutOverlay" />
+        <div className="aboutContent">
+          <p className="eyebrow">Brotherhood • Loyalty • Respect</p>
+          <h3>Wer sind die Demon Lords Germany?</h3>
+          <p>
+            Demon Lords Germany ist eine taktische Magfed-Paintball-Community mit Fokus auf
+            Teamplay, Zusammenhalt und professionelles Auftreten. Unser Ziel ist nicht nur ein
+            starkes Team auf dem Spielfeld, sondern eine echte Brotherhood außerhalb des Spiels.
+          </p>
+        </div>
+      </section>
+
+      <section className="panel aboutStory">
+        <h4>Unsere Philosophie</h4>
         <p>
-          Demon Lords Germany ist eine Paintball-Community mit Fokus auf Magfed, Scenario Games
-          und taktischem Teamplay. Unser Ziel ist ein starker Zusammenhalt auf und neben dem Spielfeld.
+          Wir stehen für Loyalität, Respekt und taktisches Gameplay. Jeder Spieler repräsentiert
+          das Team — sowohl auf Events als auch innerhalb der Community. Disziplin, Auftreten und
+          Zusammenhalt gehören für uns genauso dazu wie Action und Adrenalin.
         </p>
         <p>
-          Hier kannst du später eure echte Vereinsgeschichte, Gründung, Philosophie und euren Stil eintragen.
+          Demon Lords Germany verbindet modernes Tactical-Design mit einer aktiven Paintball-
+          Community und einem einheitlichen Teamauftritt.
         </p>
       </section>
-      <section className="panel listPanel">
-        <h4>Unsere Grundwerte</h4>
-        <ul>
-          <li>Brotherhood</li>
-          <li>Loyalty</li>
-          <li>Respect</li>
-          <li>Teamplay</li>
-          <li>Tactical Mindset</li>
-        </ul>
+
+      <section className="panel valueCard">
+        <h4>🛡 Brotherhood</h4>
+        <p>
+          Wir agieren als Team und unterstützen uns gegenseitig auf und neben dem Spielfeld.
+        </p>
+      </section>
+
+      <section className="panel valueCard">
+        <h4>⚔ Tactical Mindset</h4>
+        <p>
+          Struktur, Kommunikation und taktisches Zusammenspiel stehen im Mittelpunkt.
+        </p>
+      </section>
+
+      <section className="panel valueCard">
+        <h4>🔥 Community</h4>
+        <p>
+          Gemeinsame Events, Trainings und Teamwear schaffen eine starke Identität.
+        </p>
+      </section>
+
+      <section className="panel missionPanel">
+        <div>
+          <h4>Unsere Mission</h4>
+          <p>
+            Aufbau einer starken deutschen Magfed-Community mit professionellem Auftreten,
+            hochwertiger Vereinskleidung und einer modernen Plattform für Mitglieder.
+          </p>
+        </div>
+        <div className="missionStats">
+          <div>
+            <strong>Magfed</strong>
+            <span>Scenario & Tactical Gameplay</span>
+          </div>
+          <div>
+            <strong>Community</strong>
+            <span>Brotherhood & Zusammenhalt</span>
+          </div>
+          <div>
+            <strong>Teamwear</strong>
+            <span>Einheitlicher Auftritt</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel aboutQuote fullWidth">
+        <blockquote>
+          “Brotherhood is not a word. It is the way we fight, move and stand together.”
+        </blockquote>
       </section>
     </div>
   );
@@ -444,11 +500,13 @@ body{font-family:'Oswald',Arial,sans-serif;color:#f2f2f2;background:#000;overflo
 
 .content{flex:1;min-height:0;overflow:auto;padding:16px;background:radial-gradient(circle at top,#120000,#000 45%)}
 .pageGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.twoColumns{grid-template-columns:1.4fr .8fr}.fullWidth{grid-column:1/-1}.panel{border:1px solid rgba(150,150,150,.42);border-radius:8px;background:linear-gradient(180deg,rgba(10,10,10,.96),rgba(3,3,3,.98));box-shadow:inset 0 0 28px rgba(255,255,255,.035),0 0 18px rgba(0,0,0,.75);padding:22px}.largePanel{min-height:240px}.heroPanel{background:linear-gradient(135deg,rgba(70,0,0,.45),rgba(5,5,5,.98)),radial-gradient(circle at top right,rgba(255,0,0,.16),transparent 35%)}
-.eyebrow{color:#ff2119;text-transform:uppercase;letter-spacing:.2em;font-size:13px;margin:0 0 12px}.panel h3{margin:0 0 16px;color:#ef1b16;font-size:32px;text-transform:uppercase;letter-spacing:.03em}.panel h4{margin:0 0 10px;color:#ef1b16;font-size:22px;text-transform:uppercase}.panel p{color:#ddd;font-size:18px;line-height:1.55}.panel ul{margin:0;padding-left:20px;color:#ddd;font-size:18px;line-height:1.8}.buttonRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.buttonRow button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-size:16px;text-transform:uppercase;cursor:pointer}.buttonRow button.ghost{border:1px solid #8b0000;background:#070707}.infoCard{min-height:160px}.warning{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;color:#ffb7b7!important}.galleryGrid{grid-template-columns:repeat(3,1fr)}.galleryItem{min-height:180px;border:1px solid #333;border-radius:8px;background:linear-gradient(135deg,#111,#030303);display:flex;align-items:center;justify-content:center;color:#777;font-size:22px;text-transform:uppercase}
+.eyebrow{color:#ff2119;text-transform:uppercase;letter-spacing:.2em;font-size:13px;margin:0 0 12px}.panel h3{margin:0 0 16px;color:#ef1b16;font-size:32px;text-transform:uppercase;letter-spacing:.03em}.panel h4{margin:0 0 10px;color:#ef1b16;font-size:22px;text-transform:uppercase}.panel p{color:#ddd;font-size:18px;line-height:1.55}.panel ul{margin:0;padding-left:20px;color:#ddd;font-size:18px;line-height:1.8}.buttonRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.buttonRow button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:12px 18px;font-family:'Oswald',Arial,sans-serif;font-size:16px;text-transform:uppercase;cursor:pointer}.buttonRow button.ghost{border:1px solid #8b0000;background:#070707}.infoCard{min-height:160px}.warning{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:12px;color:#ffb7b7!important}.galleryGrid{grid-template-columns:repeat(3,1fr)}.aboutPage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1500px;margin:0 auto}.aboutHero{position:relative;min-height:340px;overflow:hidden;background:linear-gradient(135deg,rgba(70,0,0,.55),rgba(5,5,5,.96)),radial-gradient(circle at top right,rgba(255,0,0,.2),transparent 35%)}.aboutOverlay{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.05),transparent 45%),linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.15),rgba(0,0,0,.65))}.aboutContent{position:relative;z-index:2;max-width:900px}.aboutContent h3{font-size:48px;margin-bottom:18px}.aboutContent p{max-width:850px;font-size:20px;line-height:1.7}.aboutStory{grid-column:span 2;min-height:260px}.valueCard{min-height:260px}.missionPanel{grid-column:1/-1;display:grid;grid-template-columns:1.2fr .9fr;gap:20px;align-items:stretch}.missionStats{display:grid;grid-template-columns:1fr;gap:12px}.missionStats div{border:1px solid #3a3a3a;border-radius:8px;padding:18px;background:rgba(0,0,0,.45)}.missionStats strong{display:block;color:#ef1b16;font-size:22px;text-transform:uppercase;margin-bottom:6px}.missionStats span{color:#ddd}.aboutQuote{display:flex;align-items:center;justify-content:center;min-height:140px;background:linear-gradient(135deg,rgba(90,0,0,.3),rgba(0,0,0,.9))}.aboutQuote blockquote{margin:0;color:#ddd;font-size:28px;text-align:center;font-family:'Rye',Georgia,serif;line-height:1.6;max-width:1000px}.galleryItem{min-height:180px;border:1px solid #333;border-radius:8px;background:linear-gradient(135deg,#111,#030303);display:flex;align-items:center;justify-content:center;color:#777;font-size:22px;text-transform:uppercase}
 .orderSystem{height:100%;display:flex;flex-direction:column;gap:12px}.orderTopBar{display:flex;justify-content:space-between;align-items:center;gap:12px}.orderTopBar button,.orderSubmit,.adminForm button,.adminActive button,.passwordGrid button,.orderLoginForm button{border:0;border-radius:6px;background:linear-gradient(180deg,#fa2a23,#b70d09);color:#fff;padding:10px 14px;font-family:'Oswald',Arial,sans-serif;font-weight:700;text-transform:uppercase;cursor:pointer}.orderDeadline{border:1px solid #8b0000;background:rgba(0,0,0,.62);border-radius:8px;padding:12px;text-align:center;box-shadow:0 0 16px rgba(255,0,0,.18)}.orderDeadline strong{display:block;color:#ff2119;text-transform:uppercase;letter-spacing:.08em}.orderDeadline span{display:block;margin-top:5px;font-weight:700}.orderDeadline small{display:block;color:#aaa;margin-top:3px}.orderDeadline.small{padding:8px 14px}.orderDeadline.closed{border-color:#ff1c15;background:rgba(120,0,0,.18)}.orderLayout{display:grid;grid-template-columns:minmax(350px,420px) minmax(0,1fr);gap:14px;min-height:0;flex:1}.orderFormPanel,.orderOverviewPanel{min-height:0;overflow:auto}.orderFormPanel h3,.orderOverviewPanel h3{margin:0;color:#ef1b16;text-transform:uppercase}.orderFormPanel p,.orderOverviewPanel p{font-size:15px;margin:6px 0 14px;color:#ddd}.orderFormPanel form{display:flex;flex-direction:column;gap:14px}.orderTwoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.orderShirtGrid{display:grid;grid-template-columns:1fr 132px 58px;gap:10px}.orderTwoProductCols{display:grid;grid-template-columns:1fr 70px;gap:18px}.orderFormPanel label,.orderLoginForm label,.passwordPanel label{display:block;color:#f1f1f1;font-size:14px}.orderFormPanel input,.orderFormPanel select,.orderFormPanel textarea,.orderLoginForm input,.adminForm input,.passwordPanel input{width:100%;margin-top:5px;height:36px;border-radius:5px;border:1px solid #444;background:#050505;color:#fff;padding:0 10px;font-family:'Oswald',Arial,sans-serif}.orderFormPanel textarea{height:44px;padding-top:8px}.clothingProduct h4{margin:0 0 8px;font-size:18px;text-transform:uppercase}.clothingProduct small{color:#ccc;font-size:13px}.orderSizeRow{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.orderSizeRow span{min-width:28px;text-align:center;border:1px solid #333;border-radius:4px;padding:2px 5px;background:#050505;font-size:12px}.memberTotalBox{border:1px solid #8b0000;background:rgba(120,0,0,.18);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px}.memberTotalBox strong{color:#ff2119;font-size:22px}.closedNotice{border:1px solid #8b0000;background:rgba(120,0,0,.22);color:#ffb7b7;border-radius:5px;padding:12px;text-align:center;font-weight:700;text-transform:uppercase}.orderOverviewPanel{display:flex;flex-direction:column}.orderOverviewHead{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #242424;padding-bottom:12px}.adminForm{display:grid;grid-template-columns:150px auto;gap:8px;align-items:start}.adminForm span,.orderError{color:#ff1c15;font-size:13px}.adminActive{display:flex;gap:8px}.passwordPanel{border-bottom:1px solid #242424;padding:12px 0}.passwordGrid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.passwordPanel p{color:#55ff7a}.orderTableWrap{overflow:auto;flex:1;min-height:200px}.orderTableWrap table{width:100%;border-collapse:collapse;font-size:13px}.orderTableWrap th,.orderTableWrap td{padding:8px;border-bottom:1px solid #242424;text-align:left;white-space:nowrap}.orderTableWrap th[colspan]{text-align:center}.price{color:#ff1610;font-weight:700}.noteCell{max-width:220px;white-space:normal;color:#ddd}.memberStatus{color:#55ff7a;font-weight:700}.delete{border:1px solid #b00000;color:#ff1610;background:transparent;border-radius:5px;padding:5px 7px;cursor:pointer}.empty{text-align:center;color:#aaa;padding:24px}.orderBottomCards{display:grid;grid-template-columns:1.15fr .95fr;gap:12px;padding-top:12px}.orderCard{border:1px solid #505050;border-radius:8px;background:rgba(0,0,0,.55);padding:16px}.orderCard h3{margin:0 0 12px;color:#f01b15;text-align:center}.orderSummary{display:grid;grid-template-columns:34px 1fr 70px 100px;gap:6px;align-items:center;margin-bottom:6px}.orderSummary em,.orderPrice em{font-style:normal}.orderTotal{display:flex;justify-content:space-between;border-top:1px solid #555;padding-top:10px;margin-top:10px;color:#f01b15;font-size:22px}.orderPrice{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #333}.orderLoginPanel{max-width:560px;margin:20px auto;border:1px solid #8b0000;border-radius:10px;background:radial-gradient(circle at top,#232323,#050505 65%,#000);padding:28px;text-align:center;box-shadow:0 0 42px rgba(160,0,0,.48)}.orderLoginPanel img{width:150px}.orderLoginPanel h3{color:#ef1b16;text-transform:uppercase}.orderLoginForm{display:flex;flex-direction:column;gap:14px;text-align:left}
 
 footer{border-top:1px solid #240000;background:#050505;color:#d0d0d0;text-align:center;padding:12px;font-family:'Rye',Georgia,serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;flex:0 0 auto}
 
 @media(max-width:1000px){.site{overflow:auto}.hero{height:auto;min-height:210px}.logo{width:125px}.headline{padding-left:140px;padding-right:140px}.headline h1{font-size:48px}.headline h2{font-size:30px}.headline p{font-size:14px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr 1fr}.largePanel{grid-column:1/-1}.nav{justify-content:flex-start}}
-@media(max-width:700px){.hero{min-height:250px}.logo{width:105px}.logo.right{display:none}.headline{padding:120px 12px 20px}.headline h1{font-size:34px;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:12px;letter-spacing:.1em;white-space:normal}.mobileMenuButton{display:block}.nav{display:none;flex-direction:column;align-items:stretch;padding:10px}.nav.open{display:flex}.nav button{width:100%;text-align:left}.content{padding:10px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr}.panel{padding:16px}.panel h3{font-size:25px}.panel p,.panel ul{font-size:16px}.galleryItem{min-height:130px}footer{font-size:9px;letter-spacing:.1em}}
+@media(max-width:1000px){.aboutPage{grid-template-columns:1fr 1fr}.aboutHero,.missionPanel,.aboutQuote,.aboutStory{grid-column:1/-1}.missionPanel{grid-template-columns:1fr}.aboutContent h3{font-size:38px}.aboutContent p{font-size:18px}}
+
+@media(max-width:700px){.hero{min-height:250px}.logo{width:105px}.logo.right{display:none}.headline{padding:120px 12px 20px}.headline h1{font-size:34px;white-space:normal}.headline h2{font-size:23px;letter-spacing:.12em}.headline p{min-width:0;width:100%;font-size:12px;letter-spacing:.1em;white-space:normal}.mobileMenuButton{display:block}.nav{display:none;flex-direction:column;align-items:stretch;padding:10px}.nav.open{display:flex}.nav button{width:100%;text-align:left}.content{padding:10px}.pageGrid,.twoColumns,.galleryGrid{grid-template-columns:1fr}.panel{padding:16px}.panel h3{font-size:25px}.panel p,.panel ul{font-size:16px}.galleryItem{min-height:130px}footer{font-size:9px;letter-spacing:.1em}.aboutPage{grid-template-columns:1fr}.aboutContent h3{font-size:30px}.aboutContent p{font-size:16px}.aboutStory,.valueCard,.missionPanel,.aboutQuote{grid-column:1/-1}.aboutQuote blockquote{font-size:20px;padding:0 10px}}
 `;
